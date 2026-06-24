@@ -10,6 +10,15 @@
     <div class="container">
         <h2>📊 Study Tracker Dashboard</h2>
 
+        # 📊 Academic Study Tracker Portal
+
+A simple, browser-based dashboard to log and keep track of study session lengths and subjects over time.
+
+## 🚀 Features
+* Log study subjects, completion dates, and total minutes.
+* Automated run tracking counters.
+* Saves historical sessions automatically via browser `localStorage`.
+
         <div class="row g-3 mb-4 mt-2">
             <div class="col-md-4">
                 <div class="p-3 bg-primary text-white rounded">
