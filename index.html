@@ -3,227 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic OS - Enterprise Edition</title>
+    <title>Academic OS - Master Control Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
-        
-        /* Fixed Sidebar Layout */
-        .sidebar { width: 260px; position: fixed; top: 0; bottom: 0; left: 0; background-color: #1e293b; padding: 20px 10px; z-index: 100; }
-        .main-content { margin-left: 260px; padding: 40px; }
-        
-        /* Failproof Sidebar Buttons */
-        .nav-menu-item { width: 100%; text-align: left; background: none; border: none; padding: 12px 16px; color: #94a3b8; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; transition: all 0.2s; }
-        .nav-menu-item:hover { background-color: #334155; color: #f8fafc; }
-        .nav-menu-item.active-menu { background-color: #6366f1; color: #ffffff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        
-        /* App View Panels */
-        .app-panel { display: none; }
-        .app-panel.active-panel { display: block; }
-        
-        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
-        .progress-track { height: 6px; border-radius: 10px; background-color: #e2e8f0; overflow: hidden; }
+        body { background-color: #f1f5f9; color: #0f172a; font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .master-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .progress-track { height: 8px; border-radius: 10px; background-color: #e2e8f0; overflow: hidden; }
+        .section-title { font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="px-3 mb-4 text-white">
-            <h4 class="fw-bold d-flex align-items-center gap-2 m-0">
-                <i class="fa-solid fa-cubes text-info"></i> ACADEMIC.OS
-            </h4>
-            <span class="text-muted small">v2.0 Matrix Core</span>
-        </div>
-        
-        <hr class="text-secondary mx-2">
-        
-        <div class="mt-2">
-            <button class="nav-menu-item active-menu" onclick="forceViewSwitch('view-analytics', this)">
-                <i class="fa-solid fa-chart-pie"></i> Analytics Hub
-            </button>
-            <button class="nav-menu-item" onclick="forceViewSwitch('view-ledger', this)">
-                <i class="fa-solid fa-database"></i> Lesson Ledger
-            </button>
-            <button class="nav-menu-item" onclick="forceViewSwitch('view-controls', this)">
-                <i class="fa-solid fa-sliders"></i> System Controls
-            </button>
-        </div>
-        
-        <div class="position-absolute bottom-0 start-0 end-0 p-3">
-            <div class="bg-dark bg-opacity-50 text-warning rounded p-2 text-center small border border-secondary border-opacity-20">
-                🔥 Streak: <span id="streak-counter" class="fw-bold text-white">0</span> Days
-            </div>
-        </div>
-    </div>
-
-    <div class="main-content">
-        
-        <div id="view-analytics" class="app-panel active-panel">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold m-0 text-dark">Analytics Hub</h2>
-                <button class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="triggerDemoSynthesis()">
-                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Synthesize Demo Matrix
+    <nav class="navbar navbar-dark bg-dark shadow-sm py-3 mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand fw-bold d-flex align-items-center gap-2 m-0">
+                <i class="fa-solid fa-cubes text-info fs-4"></i> 
+                <span>ACADEMIC<span class="text-info">.OS</span> Master Panel</span>
+            </span>
+            <div class="d-flex gap-3 align-items-center">
+                <div class="bg-secondary bg-opacity-25 border border-secondary text-warning px-3 py-1.5 rounded-3 font-mono small">
+                    🔥 Streak: <span id="streak-counter" class="fw-bold text-white">0</span> Days
+                </div>
+                <button class="btn btn-sm btn-info fw-bold shadow-sm" onclick="triggerDemoSynthesis()">
+                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Synthesize Demo Data
                 </button>
             </div>
-            
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <div class="glass-card">
-                        <span class="text-muted text-uppercase small font-monospace d-block mb-1">Gross Runtime</span>
-                        <h1 id="agg-time" class="fw-bold text-primary m-0">0 mins</h1>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="glass-card">
-                        <span class="text-muted text-uppercase small font-monospace d-block mb-1">Completion Index</span>
-                        <h1 id="agg-rate" class="fw-bold text-success m-0">0%</h1>
-                        <div class="progress-track mt-2"><div id="agg-progress" class="bg-success h-100" style="width: 0%"></div></div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="glass-card">
-                        <span class="text-muted text-uppercase small font-monospace d-block mb-1">Active Modules</span>
-                        <h1 id="agg-modules" class="fw-bold text-info m-0">0</h1>
-                    </div>
-                </div>
-            </div>
-
-            <div class="glass-card">
-                <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-column text-primary me-2"></i>Subject Completion Velocity</h5>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle border-0 mb-0">
-                        <tbody id="chart-bars-area">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
         </div>
+    </nav>
 
-        <div id="view-ledger" class="app-panel">
-            <h2 class="fw-bold mb-4 text-dark">Lesson Record Ledger</h2>
-            
-            <div class="row">
-                <div class="col-xl-4 col-lg-5 mb-4">
-                    <div class="glass-card">
-                        <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-square-plus text-primary me-2"></i>Append Lesson Entry</h5>
-                        <form id="logging-input-form">
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Course / Module Identifier</label>
-                                <input type="text" id="in-subject" class="form-control" placeholder="e.g., Computer Science IV" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Target Lesson Title</label>
-                                <input type="text" id="in-topic" class="form-control" placeholder="e.g., Dijkstra's Graph Logic" required>
-                            </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold text-secondary">Allocation (Mins)</label>
-                                    <input type="number" id="in-duration" class="form-control" min="1" required>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small fw-bold text-secondary">Timeline Date</label>
-                                    <input type="date" id="in-date" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label small fw-bold text-secondary">Execution State</label>
-                                <select id="in-status" class="form-select">
-                                    <option value="In Progress">⏳ In Progress</option>
-                                    <option value="Completed">✅ Completed</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-dark w-100 fw-bold py-2"><i class="fa-solid fa-bolt me-1 text-warning"></i> Execute Logic Commit</button>
-                        </form>
-                    </div>
+    <div class="container-fluid px-4">
+        
+        <div class="row g-3 mb-2">
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">Gross Runtime</span>
+                    <h2 id="agg-time" class="fw-bold font-mono text-primary m-0">0 mins</h2>
                 </div>
-
-                <div class="col-xl-8 col-lg-7">
-                    <div class="glass-card">
-                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <h5 class="fw-bold m-0"><i class="fa-solid fa-database text-muted me-2"></i>Active Ledger Array</h5>
-                            <div class="d-flex gap-2">
-                                <input type="text" id="ledger-search" class="form-control form-control-sm" placeholder="Scan records..." onkeyup="executeLedgerFilters()">
-                                <select id="ledger-filter" class="form-select form-select-sm" onchange="executeLedgerFilters()">
-                                    <option value="All">All States</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Completed">Completed</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="table-responsive">
-                            <table class="table align-middle">
-                                <thead class="table-light small text-muted font-monospace">
-                                    <tr>
-                                        <th>Timestamp</th>
-                                        <th>Module</th>
-                                        <th>Element Target</th>
-                                        <th>Cost</th>
-                                        <th>State</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ledger-table-rows" class="small">
-                                    </tbody>
-                            </table>
-                        </div>
-                        <div id="ledger-empty-msg" class="text-center py-4 d-none text-muted font-monospace">
-                            No ledger structures detected matching parameters.
-                        </div>
+            </div>
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">Completeness Index</span>
+                    <h2 id="agg-rate" class="fw-bold font-mono text-success m-0">0%</h2>
+                    <div class="progress-track mt-2"><div id="agg-progress" class="bg-success h-100" style="width: 0%"></div></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">Module Density</span>
+                    <h2 id="agg-modules" class="fw-bold font-mono text-info m-0">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">System Diagnostics</span>
+                    <div class="font-mono small text-muted mt-1">
+                        <div>Avg: <span id="diag-avg" class="text-dark fw-bold">0m</span></div>
+                        <div>Backlog: <span id="diag-backlog" class="text-danger fw-bold">0m</span></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="view-controls" class="app-panel">
-            <h2 class="fw-bold mb-4 text-dark">System Controls</h2>
+        <div class="row">
             
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="glass-card">
-                        <h5 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Data Mutation Engine</h5>
-                        <p class="text-muted small">Purge all records from local caching memory. This action instantly resets your session.</p>
-                        <button class="btn btn-danger btn-sm fw-bold" onclick="executeSystemWipe()"><i class="fa-solid fa-radiation me-1"></i> Wipe Cache Memory</button>
+            <div class="col-xl-4 col-lg-5">
+                
+                <div class="master-card">
+                    <div class="section-title"><i class="fa-solid fa-square-plus text-primary"></i> Append Lesson Entry</div>
+                    <form id="logging-input-form">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Course / Module Identifier</label>
+                            <input type="text" id="in-subject" class="form-control" placeholder="e.g., Computer Science IV" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Target Lesson / Element Title</label>
+                            <input type="text" id="in-topic" class="form-control" placeholder="e.g., Dijkstra's Algorithm" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary">Allocation (Mins)</label>
+                                <input type="number" id="in-duration" class="form-control" min="1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary">Timeline Stamp</label>
+                                <input type="date" id="in-date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Execution State</label>
+                            <select id="in-status" class="form-select">
+                                <option value="In Progress">⏳ Operational / In Progress</option>
+                                <option value="Completed">✅ Terminated / Completed</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 fw-bold py-2"><i class="fa-solid fa-bolt me-1 text-warning"></i> Execute Logic Commit</button>
+                    </form>
+                </div>
+
+                <div class="master-card bg-light bg-opacity-50">
+                    <div class="section-title text-danger"><i class="fa-solid fa-sliders"></i> System Data Utilities</div>
+                    <p class="text-muted small">Manage database backups or clear local browser cache history parameters.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-dark btn-sm text-start fw-bold" onclick="exportDataToJSON()">
+                            <i class="fa-solid fa-download me-2 text-primary"></i> Export Database Backup (JSON)
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm text-start fw-bold" onclick="executeSystemWipe()">
+                            <i class="fa-solid fa-trash-can me-2"></i> Wipe Caching Engine Storage
+                        </button>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="glass-card">
-                        <h5 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-export me-2"></i>Portability Management</h5>
-                        <p class="text-muted small">Download your active progress data array as an external JSON backup file.</p>
-                        <button class="btn btn-outline-dark btn-sm fw-bold" onclick="exportDataToJSON()"><i class="fa-solid fa-download me-1"></i> Export Database JSON</button>
+
+            </div>
+
+            <div class="col-xl-8 col-lg-7">
+                
+                <div class="master-card">
+                    <div class="section-title"><i class="fa-solid fa-chart-column text-primary"></i> Module Completion Velocity</div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle border-0 mb-0">
+                            <tbody id="chart-bars-area">
+                                </tbody>
+                        </table>
                     </div>
                 </div>
+
+                <div class="master-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div class="section-title m-0"><i class="fa-solid fa-database text-secondary"></i> Active Ledger Array</div>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="ledger-search" class="form-control form-control-sm" placeholder="Scan records..." onkeyup="executeLedgerFilters()">
+                            <select id="ledger-filter" class="form-select form-select-sm" onchange="executeLedgerFilters()">
+                                <option value="All">All Statuses</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light small text-muted font-mono">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Module Group</th>
+                                    <th>Element Target</th>
+                                    <th>Cost</th>
+                                    <th>State</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-table-rows" class="small">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="ledger-empty-msg" class="text-center py-5 d-none text-muted font-mono small">
+                        <i class="fa-solid fa-circle-nodes d-block mb-2 fa-2x text-black-50"></i>
+                        No structural nodes found matching the active workspace matrix parameters.
+                    </div>
+                </div>
+
             </div>
         </div>
 
     </div>
 
     <script>
-        let dataStore = JSON.parse(localStorage.getItem('academicOS_v2')) || [];
-        let globalStreak = parseInt(localStorage.getItem('academicOS_v2_streak')) || 0;
-        let baseLoggedDate = localStorage.getItem('academicOS_v2_date') || "";
+        let dataStore = JSON.parse(localStorage.getItem('academicOS_v3')) || [];
+        let globalStreak = parseInt(localStorage.getItem('academicOS_v3_streak')) || 0;
+        let baseLoggedDate = localStorage.getItem('academicOS_v3_date') || "";
 
         const submissionForm = document.getElementById('logging-input-form');
         const rowsOutputTarget = document.getElementById('ledger-table-rows');
         const emptyAlertTarget = document.getElementById('ledger-empty-msg');
         const chartsOutputTarget = document.getElementById('chart-bars-area');
-
-        // UNBREAKABLE CHANGER: Direct visibility toggle completely independent of CSS layout bugs
-        function forceViewSwitch(targetViewId, clickedButton) {
-            // Hide every view panel explicitly
-            document.querySelectorAll('.app-panel').forEach(panel => {
-                panel.classList.remove('active-panel');
-            });
-            // Remove active states from all sidebar buttons
-            document.querySelectorAll('.nav-menu-item').forEach(btn => {
-                btn.classList.remove('active-menu');
-            });
-
-            // Turn on active targets
-            document.getElementById(targetViewId).classList.add('active-panel');
-            clickedButton.classList.add('active-menu');
-        }
 
         function calculateDashboardStates() {
             rowsOutputTarget.innerHTML = '';
@@ -236,9 +191,10 @@
 
             let calculatedMinutes = 0;
             let completeCount = 0;
+            let backlogMinutes = 0;
             let subjectVelocityMap = {};
 
-            // Sort chronology: newest entry output first
+            // Sort chronology: newest entry first
             dataStore.sort((a,b) => new Date(b.date) - new Date(a.date));
 
             dataStore.forEach((element, index) => {
@@ -254,29 +210,31 @@
                 if(stateDone) {
                     completeCount++;
                     subjectVelocityMap[cleanKey].done++;
+                } else {
+                    backlogMinutes += element.duration;
                 }
 
                 const tableRow = document.createElement('tr');
-                if(stateDone) tableRow.classList.add('table-success', 'bg-opacity-10');
+                if(stateDone) tableRow.classList.add('table-success', 'bg-opacity-10', 'text-decoration-line-through', 'text-muted');
 
                 tableRow.innerHTML = `
-                    <td class="font-monospace text-muted text-nowrap">${element.date}</td>
-                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border font-monospace px-2 py-1">${sanitizeString(element.subject)}</span></td>
+                    <td class="font-mono text-muted text-nowrap">${element.date}</td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border font-mono px-2 py-1">${sanitizeString(element.subject)}</span></td>
                     <td class="fw-semibold text-dark">${sanitizeString(element.topic)}</td>
-                    <td class="font-monospace fw-bold">${element.duration}m</td>
+                    <td class="font-mono fw-bold">${element.duration}m</td>
                     <td>
-                        <span class="badge ${stateDone ? 'bg-success-subtle text-success border border-success' : 'bg-warning-subtle text-warning border border-warning'}">
-                            ${stateDone ? '⚡ Completed' : '⏳ In Progress'}
+                        <span class="badge ${stateDone ? 'bg-success' : 'bg-warning text-dark'}">
+                            ${stateDone ? '⚡ Done' : '⏳ Active'}
                         </span>
                     </td>
                     <td class="text-end">
-                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeLedgerItem(${index})"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeLedgerItem(${index})"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 `;
                 rowsOutputTarget.appendChild(tableRow);
             });
 
-            // Set Header Counter Blocks Data outputs
+            // Set aggregate metrics blocks
             document.getElementById('agg-time').textContent = `${calculatedMinutes}m`;
             document.getElementById('agg-modules').textContent = Object.keys(subjectVelocityMap).length;
             
@@ -284,10 +242,14 @@
             document.getElementById('agg-rate').textContent = `${ratePercentage}%`;
             document.getElementById('agg-progress').style.width = `${ratePercentage}%`;
 
+            // Diagnostics mapping
+            document.getElementById('diag-avg').textContent = dataStore.length > 0 ? `${Math.round(calculatedMinutes / dataStore.length)}m` : `0m`;
+            document.getElementById('diag-backlog').textContent = `${backlogMinutes}m`;
+
             renderVelocityBars(subjectVelocityMap);
 
-            // Sync structural memory cache definitions
-            localStorage.setItem('academicOS_v2', JSON.stringify(dataStore));
+            // Caching save operations
+            localStorage.setItem('academicOS_v3', JSON.stringify(dataStore));
             document.getElementById('streak-counter').textContent = globalStreak;
         }
 
@@ -324,8 +286,8 @@
                     globalStreak = 1;
                 }
                 baseLoggedDate = dateInput;
-                localStorage.setItem('academicOS_v2_streak', globalStreak);
-                localStorage.setItem('academicOS_v2_date', baseLoggedDate);
+                localStorage.setItem('academicOS_v3_streak', globalStreak);
+                localStorage.setItem('academicOS_v3_date', baseLoggedDate);
             }
         }
 
@@ -334,7 +296,7 @@
             const referenceKeys = Object.keys(modules);
             
             if(referenceKeys.length === 0) {
-                chartsOutputTarget.innerHTML = `<tr><td class="text-muted py-3 small font-monospace">No structural data profiles compiled into local storage arrays.</td></tr>`;
+                chartsOutputTarget.innerHTML = `<tr><td class="text-muted py-3 small font-mono">No structural metrics compiled into storage registry arrays.</td></tr>`;
                 return;
             }
 
@@ -342,11 +304,11 @@
                 const stepPercentage = Math.round((modules[key].done / modules[key].total) * 100);
                 const visualRow = document.createElement('tr');
                 visualRow.innerHTML = `
-                    <td class="fw-bold font-monospace text-secondary small" style="width: 25%">${sanitizeString(key)}</td>
+                    <td class="fw-bold font-mono text-secondary small" style="width: 25%">${sanitizeString(key)}</td>
                     <td style="width: 65%">
                         <div class="progress-track"><div class="bg-primary h-100" style="width: ${stepPercentage}%"></div></div>
                     </td>
-                    <td class="text-end font-monospace fw-bold text-muted small" style="width: 10%">${stepPercentage}%</td>
+                    <td class="text-end font-mono fw-bold text-muted small" style="width: 10%">${stepPercentage}%</td>
                 `;
                 chartsOutputTarget.appendChild(visualRow);
             });
@@ -386,7 +348,7 @@
         }
 
         function executeSystemWipe() {
-            if(confirm('Wipe complete system index memory cache arrays?')) {
+            if(confirm('Wipe complete local system database registry arrays?')) {
                 dataStore = [];
                 globalStreak = 0;
                 baseLoggedDate = "";
@@ -405,13 +367,13 @@
 
         function triggerDemoSynthesis() {
             dataStore = [
-                { date: "2026-06-12", subject: "Quantum Engineering", topic: "Entanglement Distribution Vectors", duration: 120, status: "Completed" },
-                { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Colorings & Tree Arrays", duration: 90, status: "Completed" },
-                { date: "2026-06-18", subject: "Neural Architecture", topic: "Deep Belief Weight Matrices", duration: 150, status: "In Progress" },
-                { date: "2026-06-21", subject: "Quantum Engineering", topic: "Superconducting Circuit Alignment", duration: 80, status: "Completed" }
+                { date: "2026-06-12", subject: "Quantum Computing", topic: "Entanglement Topologies", duration: 120, status: "Completed" },
+                { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Isomorphisms & Tree Nodes", duration: 90, status: "Completed" },
+                { date: "2026-06-18", subject: "Neural Architecture", topic: "Backpropagation Weight Scaling", duration: 150, status: "In Progress" },
+                { date: "2026-06-21", subject: "Quantum Computing", topic: "Shor's Processing Parameters", duration: 80, status: "Completed" }
             ];
             globalStreak = 4;
-            localStorage.setItem('academicOS_v2_streak', globalStreak);
+            localStorage.setItem('academicOS_v3_streak', globalStreak);
             calculateDashboardStates();
         }
 
