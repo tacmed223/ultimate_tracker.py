@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academic OS - Master Control Dashboard</title>
+    <title>Academic OS - Multi-Profile Platform</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body { background-color: #f1f5f9; color: #0f172a; font-family: 'Inter', sans-serif; padding-bottom: 60px; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .master-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
+        .master-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; position: relative; }
         .progress-track { height: 8px; border-radius: 10px; background-color: #e2e8f0; overflow: hidden; }
         .section-title { font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Smooth transitions for locked panels */
+        .admin-locked-zone { display: none; }
+        .admin-mode-active .admin-locked-zone { display: block !important; }
     </style>
 </head>
 <body>
@@ -21,18 +25,42 @@
         <div class="container-fluid px-4">
             <span class="navbar-brand fw-bold d-flex align-items-center gap-2 m-0">
                 <i class="fa-solid fa-cubes text-info fs-4"></i> 
-                <span>ACADEMIC<span class="text-info">.OS</span> Master Panel</span>
+                <span>ACADEMIC<span class="text-info">.OS</span> Platform</span>
             </span>
             <div class="d-flex gap-3 align-items-center">
+                <button id="admin-status-badge" class="btn btn-sm btn-outline-secondary text-muted fw-bold font-mono" onclick="toggleAdminLoginGate()">
+                    <i class="fa-solid fa-lock me-1"></i> Student Mode
+                </button>
                 <div class="bg-secondary bg-opacity-25 border border-secondary text-warning px-3 py-1.5 rounded-3 font-mono small">
                     🔥 Streak: <span id="streak-counter" class="fw-bold text-white">0</span> Days
                 </div>
-                <button class="btn btn-sm btn-info fw-bold shadow-sm" onclick="triggerDemoSynthesis()">
-                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Synthesize Demo Data
-                </button>
             </div>
         </div>
     </nav>
+
+    <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header bg-dark text-white border-0 py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-shield-halved text-info me-2"></i>Admin Authorization</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="admin-gate-form">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Operator Username</label>
+                            <input type="text" id="gate-user" class="form-control" placeholder="Enter username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Security Password</label>
+                            <input type="password" id="gate-pass" class="form-control" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Decrypt & Unlock Panels</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="container-fluid px-4">
         
@@ -103,15 +131,18 @@
                     </form>
                 </div>
 
-                <div class="master-card bg-light bg-opacity-50">
-                    <div class="section-title text-danger"><i class="fa-solid fa-sliders"></i> System Data Utilities</div>
-                    <p class="text-muted small">Manage database backups or clear local browser cache history parameters.</p>
+                <div class="master-card bg-light bg-opacity-70 admin-locked-zone">
+                    <div class="section-title text-danger"><i class="fa-solid fa-gears me-2"></i> Administrative Root Control</div>
+                    <p class="text-muted small">Perform localized operations on active registry variables and configurations.</p>
                     <div class="d-grid gap-2">
                         <button class="btn btn-outline-dark btn-sm text-start fw-bold" onclick="exportDataToJSON()">
-                            <i class="fa-solid fa-download me-2 text-primary"></i> Export Database Backup (JSON)
+                            <i class="fa-solid fa-download me-2 text-primary"></i> Export Full Backup Array (JSON)
+                        </button>
+                        <button class="btn btn-outline-info btn-sm text-start fw-bold" onclick="triggerDemoSynthesis()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2 text-info"></i> Inject Sandbox Demo Framework
                         </button>
                         <button class="btn btn-outline-danger btn-sm text-start fw-bold" onclick="executeSystemWipe()">
-                            <i class="fa-solid fa-trash-can me-2"></i> Wipe Caching Engine Storage
+                            <i class="fa-solid fa-trash-can me-2"></i> Deep Clean Storage Registers
                         </button>
                     </div>
                 </div>
@@ -152,7 +183,7 @@
                                     <th>Element Target</th>
                                     <th>Cost</th>
                                     <th>State</th>
-                                    <th></th>
+                                    <th class="admin-locked-zone">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="ledger-table-rows" class="small">
@@ -170,15 +201,58 @@
 
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let dataStore = JSON.parse(localStorage.getItem('academicOS_v3')) || [];
-        let globalStreak = parseInt(localStorage.getItem('academicOS_v3_streak')) || 0;
-        let baseLoggedDate = localStorage.getItem('academicOS_v3_date') || "";
+        let dataStore = JSON.parse(localStorage.getItem('academicOS_v4')) || [];
+        let globalStreak = parseInt(localStorage.getItem('academicOS_v4_streak')) || 0;
+        let baseLoggedDate = localStorage.getItem('academicOS_v4_date') || "";
+        let isAdminAuthenticated = false;
 
         const submissionForm = document.getElementById('logging-input-form');
         const rowsOutputTarget = document.getElementById('ledger-table-rows');
         const emptyAlertTarget = document.getElementById('ledger-empty-msg');
         const chartsOutputTarget = document.getElementById('chart-bars-area');
+        
+        const loginModalInstance = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+        const loginForm = document.getElementById('admin-gate-form');
+
+        // GATEKEEPER SWITCH LOGIC
+        function toggleAdminLoginGate() {
+            if (isAdminAuthenticated) {
+                // If already logged in, clicking the badge will lock the platform back down
+                isAdminAuthenticated = false;
+                document.body.classList.remove('admin-mode-active');
+                const badge = document.getElementById('admin-status-badge');
+                badge.className = "btn btn-sm btn-outline-secondary text-muted fw-bold font-mono";
+                badge.innerHTML = `<i class="fa-solid fa-lock me-1"></i> Student Mode`;
+                calculateDashboardStates();
+            } else {
+                loginModalInstance.show();
+            }
+        }
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('gate-user').value;
+            const passwordInput = document.getElementById('gate-pass').value;
+
+            if (usernameInput === "username" && passwordInput === "password") {
+                isAdminAuthenticated = true;
+                loginModalInstance.hide();
+                loginForm.reset();
+                
+                // Add class to body to visually reveal admin components via CSS mapping
+                document.body.classList.add('admin-mode-active');
+                
+                const badge = document.getElementById('admin-status-badge');
+                badge.className = "btn btn-sm btn-success fw-bold font-mono text-white animate__animated animate__flash";
+                badge.innerHTML = `<i class="fa-solid fa-unlock-keyhole me-1"></i> Root Active`;
+                
+                calculateDashboardStates();
+            } else {
+                alert("❌ Authentication Failure: Invalid Operator Profile Parameters.");
+            }
+        });
 
         function calculateDashboardStates() {
             rowsOutputTarget.innerHTML = '';
@@ -194,7 +268,6 @@
             let backlogMinutes = 0;
             let subjectVelocityMap = {};
 
-            // Sort chronology: newest entry first
             dataStore.sort((a,b) => new Date(b.date) - new Date(a.date));
 
             dataStore.forEach((element, index) => {
@@ -227,14 +300,13 @@
                             ${stateDone ? '⚡ Done' : '⏳ Active'}
                         </span>
                     </td>
-                    <td class="text-end">
+                    <td class="text-end admin-locked-zone">
                         <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeLedgerItem(${index})"><i class="fa-solid fa-trash-can"></i></button>
                     </td>
                 `;
                 rowsOutputTarget.appendChild(tableRow);
             });
 
-            // Set aggregate metrics blocks
             document.getElementById('agg-time').textContent = `${calculatedMinutes}m`;
             document.getElementById('agg-modules').textContent = Object.keys(subjectVelocityMap).length;
             
@@ -242,14 +314,12 @@
             document.getElementById('agg-rate').textContent = `${ratePercentage}%`;
             document.getElementById('agg-progress').style.width = `${ratePercentage}%`;
 
-            // Diagnostics mapping
             document.getElementById('diag-avg').textContent = dataStore.length > 0 ? `${Math.round(calculatedMinutes / dataStore.length)}m` : `0m`;
             document.getElementById('diag-backlog').textContent = `${backlogMinutes}m`;
 
             renderVelocityBars(subjectVelocityMap);
 
-            // Caching save operations
-            localStorage.setItem('academicOS_v3', JSON.stringify(dataStore));
+            localStorage.setItem('academicOS_v4', JSON.stringify(dataStore));
             document.getElementById('streak-counter').textContent = globalStreak;
         }
 
@@ -286,8 +356,8 @@
                     globalStreak = 1;
                 }
                 baseLoggedDate = dateInput;
-                localStorage.setItem('academicOS_v3_streak', globalStreak);
-                localStorage.setItem('academicOS_v3_date', baseLoggedDate);
+                localStorage.setItem('academicOS_v4_streak', globalStreak);
+                localStorage.setItem('academicOS_v4_date', baseLoggedDate);
             }
         }
 
@@ -343,11 +413,13 @@
         }
 
         function purgeLedgerItem(pos) {
+            if(!isAdminAuthenticated) return;
             dataStore.splice(pos, 1);
             calculateDashboardStates();
         }
 
         function executeSystemWipe() {
+            if(!isAdminAuthenticated) return;
             if(confirm('Wipe complete local system database registry arrays?')) {
                 dataStore = [];
                 globalStreak = 0;
@@ -358,6 +430,7 @@
         }
 
         function exportDataToJSON() {
+            if(!isAdminAuthenticated) return;
             const dynamicBlob = new Blob([JSON.stringify(dataStore, null, 2)], { type: 'application/json' });
             const temporaryAnchor = document.createElement('a');
             temporaryAnchor.href = URL.createObjectURL(dynamicBlob);
@@ -366,6 +439,7 @@
         }
 
         function triggerDemoSynthesis() {
+            if(!isAdminAuthenticated) return;
             dataStore = [
                 { date: "2026-06-12", subject: "Quantum Computing", topic: "Entanglement Topologies", duration: 120, status: "Completed" },
                 { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Isomorphisms & Tree Nodes", duration: 90, status: "Completed" },
@@ -373,7 +447,7 @@
                 { date: "2026-06-21", subject: "Quantum Computing", topic: "Shor's Processing Parameters", duration: 80, status: "Completed" }
             ];
             globalStreak = 4;
-            localStorage.setItem('academicOS_v3_streak', globalStreak);
+            localStorage.setItem('academicOS_v4_streak', globalStreak);
             calculateDashboardStates();
         }
 
