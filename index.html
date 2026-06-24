@@ -3,257 +3,487 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Academic & Lesson Progress Portal</title>
+    <title>Ultimate Academic OS & Progress Matrix</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        .card-stats { transition: transform 0.2s; cursor: pointer; }
-        .card-stats:hover { transform: translateY(-5px); }
-        .progress-sm { height: 8px; }
-        .completed-row { background-color: rgba(25, 135, 84, 0.05) !important; text-decoration: line-through; color: #6c757d; }
+        :root {
+            --ctx-bg: #f8fafc;
+            --ctx-card: #ffffff;
+            --ctx-text: #0f172a;
+            --ctx-primary: #6366f1;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--ctx-bg); color: var(--ctx-text); }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .glass-card { background: var(--ctx-card); border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .nav-pills .nav-link { color: #64748b; border-radius: 10px; font-weight: 500; padding: 10px 20px; transition: all 0.2s; }
+        .nav-pills .nav-link.active { background-color: var(--ctx-primary); color: white; shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        .badge-pill { border-radius: 30px; padding: 5px 12px; font-weight: 600; }
+        .progress-track { height: 6px; border-radius: 10px; background-color: #e2e8f0; overflow: hidden; }
+        .streak-fire { color: #f97316; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
-<body class="bg-light">
+<body>
 
-    <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-3">
         <div class="container">
-            <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-graduation-cap me-2 text-warning"></i>Ultimate Tracker Pro</span>
-            <button class="btn btn-outline-light btn-sm" onclick="loadMockData()"><i class="fa-solid fa-database me-1"></i> Load Demo Data</button>
+            <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
+                <i class="fa-solid fa-cubes text-info fs-3"></i> 
+                <span>ACADEMIC<span class="text-info">.OS</span> Matrix</span>
+            </span>
+            <div class="d-flex gap-2 align-items-center">
+                <div class="bg-secondary bg-opacity-25 border border-secondary text-light px-3 py-1.5 rounded-3 font-mono small d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-fire streak-fire"></i> Streak: <span id="streak-counter" class="fw-bold text-warning">0</span> Days
+                </div>
+                <button class="btn btn-sm btn-info fw-bold" onclick="generateAdvancedDemo()"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Synthesize Demo</button>
+            </div>
         </div>
     </nav>
 
-    <div class="container mb-5">
-        
-        <div class="row g-3 mb-4">
-            <div class="col-md-3">
-                <div class="card card-stats bg-primary text-white border-0 shadow-sm h-100">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small mb-1">Total Study Time</h6>
-                            <h3 id="stat-total-time" class="fw-bold mb-0">0 mins</h3>
-                        </div>
-                        <i class="fa-solid fa-clock fa-2xl text-white-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats bg-success text-white border-0 shadow-sm h-100">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small mb-1">Completed Lessons</h6>
-                            <h3 id="stat-completed-lessons" class="fw-bold mb-0">0</h3>
-                        </div>
-                        <i class="fa-solid fa-circle-check fa-2xl text-white-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats bg-warning text-dark border-0 shadow-sm h-100">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase text-dark-50 small mb-1">Overall Progress</h6>
-                            <h3 id="stat-progress-pct" class="fw-bold mb-0">0%</h3>
-                        </div>
-                        <i class="fa-solid fa-chart-line fa-2xl text-dark-50"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card card-stats bg-info text-white border-0 shadow-sm h-100">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-uppercase text-white-50 small mb-1">Unique Subjects</h6>
-                            <h3 id="stat-total-subjects" class="fw-bold mb-0">0</h3>
-                        </div>
-                        <i class="fa-solid fa-book-open fa-2xl text-white-50"></i>
-                    </div>
-                </div>
-            </div>
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <ul class="nav nav-pills gap-2" id="matrixTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#panel-dashboard" type="button"><i class="fa-solid fa-chart-pie me-2"></i>Analytics Hub</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="ledger-tab" data-bs-toggle="pill" data-bs-target="#panel-ledger" type="button"><i class="fa-solid fa-database me-2"></i>Lesson Record Ledger</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="config-tab" data-bs-toggle="pill" data-bs-target="#panel-config" type="button"><i class="fa-solid fa-sliders me-2"></i>System Controls</button>
+                </li>
+            </ul>
+            <div class="font-mono text-muted small"><i class="fa-solid fa-server me-1"></i> Storage Engine: LocalStorage (Encrypted Cache)</div>
         </div>
 
-        <div class="row g-4">
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white border-0 py-3">
-                        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-circle-plus text-primary me-2"></i>Log Lesson Progress</h5>
+        <div class="tab-content" id="matrixTabContent">
+            
+            <div class="tab-pane fade show active" id="panel-dashboard" role="tabpanel">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <div class="glass-card p-4 bg-white">
+                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Gross Runtime</p>
+                            <h2 id="agg-total-time" class="fw-bold font-mono tracking-tight text-primary">0 mins</h2>
+                            <div class="text-muted small"><i class="fa-solid fa-hourglass-half me-1"></i>Aggregated study durations</div>
+                        </div>
                     </div>
-                    <div class="card-body pt-0">
-                        <form id="advanced-session-form">
-                            <div class="mb-3">
-                                <label class="form-label font-monospace small fw-bold">Subject / Course</label>
-                                <input type="text" id="form-subject" class="form-control" placeholder="e.g., Computer Science" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label font-monospace small fw-bold">Lesson Title / Topic</label>
-                                <input type="text" id="form-topic" class="form-control" placeholder="e.g., Array Data Structures" required>
-                            </div>
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label font-monospace small fw-bold">Duration (Mins)</label>
-                                    <input type="number" id="form-duration" class="form-control" min="1" required>
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label font-monospace small fw-bold">Execution Date</label>
-                                    <input type="date" id="form-date" class="form-control" required>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label font-monospace small fw-bold">Lesson Status</label>
-                                <select id="form-status" class="form-select">
-                                    <option value="In Progress">⏳ In Progress</option>
-                                    <option value="Completed">✅ Completed</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 fw-bold"><i class="fa-solid fa-floppy-disk me-1"></i> Save To Ledger</button>
-                        </form>
+                    <div class="col-md-3">
+                        <div class="glass-card p-4 bg-white">
+                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Completeness Index</p>
+                            <h2 id="agg-completion-rate" class="fw-bold font-mono text-success">0%</h2>
+                            <div class="progress-track mt-2"><div id="agg-progress-bar" class="bg-success h-100" style="width: 0%"></div></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-card p-4 bg-white">
+                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Module Density</p>
+                            <h2 id="agg-unique-subjects" class="fw-bold font-mono text-info">0</h2>
+                            <div class="text-muted small"><i class="fa-solid fa-layer-group me-1"></i>Active structured modules</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-card p-4 bg-white">
+                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Standing Tier</p>
+                            <h2 id="agg-rank-tier" class="fw-bold text-warning fs-3">Novice</h2>
+                            <div class="text-muted small font-mono" id="agg-rank-sub">Log data to unlock tiers</div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="card border-0 shadow-sm bg-light text-center py-3">
-                    <div class="card-body">
-                        <p class="small text-muted mb-2">Want to start clean? This wipes browser cache storage.</p>
-                        <button class="btn btn-outline-danger btn-sm w-100" onclick="clearAllData()"><i class="fa-solid fa-trash-can me-1"></i> Clear Local Ledger</button>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-lg-7">
+                        <div class="glass-card p-4 bg-white h-100">
+                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-column text-primary me-2"></i>Module Completion Velocity</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle border-0 mb-0">
+                                    <tbody id="module-progress-distribution">
+                                        </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="glass-card p-4 bg-white h-100 text-center d-flex flex-column justify-content-center">
+                            <h5 class="fw-bold text-start mb-3"><i class="fa-solid fa-bullseye text-danger me-2"></i>System Diagnostics</h5>
+                            <div class="p-3 bg-light rounded-3 mb-2 font-mono text-start small">
+                                <div><strong>Next Tier Progress:</strong> <span id="diag-next-tier">0/5 logs</span></div>
+                                <div><strong>Average Runtime:</strong> <span id="diag-avg-time">0 mins/log</span></div>
+                                <div><strong>Estimated Backlog:</strong> <span id="diag-backlog">0 mins</span></div>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm w-100 mt-auto" onclick="bootstrapTab('ledger-tab')">Navigate to Logging Registry <i class="fa-solid fa-arrow-right ms-1"></i></button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white border-0 py-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
-                        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-list-check text-success me-2"></i>Academic Lesson Ledger</h5>
-                        <div class="d-flex gap-2">
-                            <input type="text" id="table-search" class="form-control form-control-sm" placeholder="Search lessons..." onkeyup="filterTable()">
-                            <select id="table-filter-status" class="form-select form-select-sm" onchange="filterTable()">
-                                <option value="All">All Statuses</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Completed">Completed</option>
-                            </select>
+            <div class="tab-pane fade" id="panel-ledger" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-xl-4">
+                        <div class="glass-card p-4 bg-white">
+                            <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-square-plus text-primary me-2"></i>Append Lesson Entry</h5>
+                            <form id="matrix-logging-form">
+                                <div class="mb-3">
+                                    <label class="form-label font-mono small fw-bold">Course / Module Identifier</label>
+                                    <input type="text" id="in-subject" class="form-control form-control-md" placeholder="e.g., Computer Science IV" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-mono small fw-bold">Target Lesson / Element Title</label>
+                                    <input type="text" id="in-topic" class="form-control form-control-md" placeholder="e.g., Dijkstra's Graph Optimizations" required>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label font-mono small fw-bold">Allocation (Mins)</label>
+                                        <input type="number" id="in-duration" class="form-control form-control-md" min="1" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label font-mono small fw-bold">Timeline Stamp</label>
+                                        <input type="date" id="in-date" class="form-control form-control-md" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label font-mono small fw-bold">Execution Status State</label>
+                                    <select id="in-status" class="form-select form-select-md">
+                                        <option value="In Progress">⏳ Operational / In Progress</option>
+                                        <option value="Completed">✅ Terminated / Completed</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-dark w-100 py-2.5 fw-bold"><i class="fa-solid fa-bolt me-1 text-warning"></i> Execute Logic Commit</button>
+                            </form>
                         </div>
                     </div>
-                    <div class="card-body pt-0">
-                        <div class="table-responsive">
-                            <table class="table align-middle border-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th style="width: 15%">Date</th>
-                                        <th style="width: 30%">Subject</th>
-                                        <th style="width: 30%">Lesson/Topic</th>
-                                        <th style="width: 12%">Duration</th>
-                                        <th style="width: 13%">Status</th>
-                                        <th style="width: 5%"></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ledger-table-body">
-                                    </tbody>
-                            </table>
-                        </div>
-                        <div id="empty-state-msg" class="text-center py-5 d-none">
-                            <i class="fa-solid fa-folder-open fa-3x text-muted mb-2"></i>
-                            <p class="text-muted mb-0">No records found matching your active ledger filters.</p>
+
+                    <div class="col-xl-8">
+                        <div class="glass-card bg-white p-4">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+                                <h5 class="fw-bold mb-0"><i class="fa-solid fa-database text-muted me-2"></i>Active Ledger Array</h5>
+                                <div class="d-flex gap-2">
+                                    <input type="text" id="query-search" class="form-control form-control-sm" placeholder="Scan elements..." onkeyup="filterMatrixStore()">
+                                    <select id="query-filter-state" class="form-select form-select-sm" onchange="filterMatrixStore()">
+                                        <option value="All">All States</option>
+                                        <option value="In Progress">In Progress</option>
+                                        <option value="Completed">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table align-middle">
+                                    <thead class="table-light font-mono small text-muted">
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Module Base</th>
+                                            <th>Element Target</th>
+                                            <th>Cost</th>
+                                            <th>State</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="matrix-table-body" class="small">
+                                        </tbody>
+                                </table>
+                            </div>
+                            <div id="matrix-empty-alert" class="text-center py-5 d-none">
+                                <i class="fa-solid fa-circle-exclamation fa-3x text-muted mb-2"></i>
+                                <p class="text-muted font-mono mb-0">System Array registers empty parameters for selected filters.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="tab-pane fade" id="panel-config" role="tabpanel">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="glass-card p-4 bg-white">
+                            <h5 class="fw-bold text-danger mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i>Data Mutation Engine</h5>
+                            <p class="text-muted small">Wipe out the persistent system registry from local caching storage. Action cannot be undone.</p>
+                            <button class="btn btn-danger btn-sm" onclick="wipeLocalRegistryMatrix()"><i class="fa-solid fa-radiation me-1"></i> Wipe Cache Memory</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-card p-4 bg-white">
+                            <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-file-export me-2"></i>Portability Management</h5>
+                            <p class="text-muted small">Export system database parameters into a secure JSON flatfile configuration, or load state back in.</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-outline-dark btn-sm" onclick="exportJSONLedger()"><i class="fa-solid fa-download me-1"></i> Export JSON</button>
+                                <button class="btn btn-outline-primary btn-sm" onclick="triggerImportSelection()"><i class="fa-solid fa-upload me-1"></i> Import JSON</button>
+                                <input type="file" id="hidden-import-field" class="d-none" accept=".json" onchange="importJSONLedger(event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
-
     </div>
 
     <script>
-        // Core application database initialized from browser cache or empty array
-        let ledgerStore = JSON.parse(localStorage.getItem('advancedStudyLedger')) || [];
+        let matrixStore = JSON.parse(localStorage.getItem('academicOSLedger')) || [];
+        let systemStreak = parseInt(localStorage.getItem('academicOSStreak')) || 0;
+        let lastLoggedDate = localStorage.getItem('academicOSLastDate') || "";
 
-        const sessionForm = document.getElementById('advanced-session-form');
-        const tableBody = document.getElementById('ledger-table-body');
-        const emptyState = document.getElementById('empty-state-msg');
+        const mainForm = document.getElementById('matrix-logging-form');
+        const matrixTableBody = document.getElementById('matrix-table-body');
+        const emptyAlert = document.getElementById('matrix-empty-alert');
 
-        // Render data changes to the screen
-        function renderApplication() {
-            tableBody.innerHTML = '';
+        function parseStateMetrics() {
+            matrixTableBody.innerHTML = '';
             
-            if(ledgerStore.length === 0) {
-                emptyState.classList.remove('d-none');
+            if(matrixStore.length === 0) {
+                emptyAlert.classList.remove('d-none');
             } else {
-                emptyState.classList.add('d-none');
+                emptyAlert.classList.add('d-none');
             }
 
-            // Track state counters
-            let totalTime = 0;
-            let completedCount = 0;
-            let uniqueSubjects = new Set();
+            let totalMinutes = 0;
+            let finishedItems = 0;
+            let modulesMapped = {};
 
-            ledgerStore.forEach((item, index) => {
-                totalTime += item.duration;
-                uniqueSubjects.add(item.subject.trim().toLowerCase());
+            matrixStore.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+            matrixStore.forEach((element, pos) => {
+                totalMinutes += element.duration;
                 
-                const isCompleted = item.status === 'Completed';
-                if(isCompleted) completedCount++;
+                let modKey = element.subject.trim();
+                if(!modulesMapped[modKey]) {
+                    modulesMapped[modKey] = { total: 0, completed: 0 };
+                }
+                modulesMapped[modKey].total++;
 
-                const rowHtml = document.createElement('tr');
-                if(isCompleted) rowHtml.classList.add('completed-row');
+                const isDone = element.status === 'Completed';
+                if(isDone) {
+                    finishedItems++;
+                    modulesMapped[modKey].completed++;
+                }
 
-                rowHtml.innerHTML = `
-                    <td class="small text-muted font-monospace">${item.date}</td>
-                    <td><span class="badge bg-secondary-subtle text-secondary border px-2 py-1">${escapeHtml(item.subject)}</span></td>
-                    <td><strong>${escapeHtml(item.topic)}</strong></td>
-                    <td class="font-monospace">${item.duration} mins</td>
+                const itemRow = document.createElement('tr');
+                if(isDone) itemRow.classList.add('table-success', 'bg-opacity-10', 'text-decoration-line-through', 'text-muted');
+
+                itemRow.innerHTML = `
+                    <td class="font-mono text-muted text-nowrap">${element.date}</td>
+                    <td><span class="badge bg-dark bg-opacity-10 text-dark border px-2 py-1 font-mono">${escapeInput(element.subject)}</span></td>
+                    <td class="fw-semibold text-dark">${escapeInput(element.topic)}</td>
+                    <td class="font-mono fw-bold">${element.duration}m</td>
                     <td>
-                        <span class="badge ${isCompleted ? 'bg-success' : 'bg-warning text-dark'}">
-                            ${isCompleted ? '<i class="fa-solid fa-check me-1"></i>Done' : '<i class="fa-solid fa-spinner fa-spin me-1"></i>Active'}
+                        <span class="badge badge-pill ${isDone ? 'bg-success-subtle text-success border border-success' : 'bg-warning-subtle text-warning border border-warning'}">
+                            ${isDone ? '⚡ Done' : '⏳ Active'}
                         </span>
                     </td>
                     <td class="text-end">
-                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="deleteItem(${index})">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
+                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeElement(${pos})"><i class="fa-solid fa-xmark"></i></button>
                     </td>
                 `;
-                tableBody.appendChild(rowHtml);
+                matrixTableBody.appendChild(itemRow);
             });
 
-            // Calculate advanced metric data fields
-            document.getElementById('stat-total-time').textContent = `${totalTime} mins`;
-            document.getElementById('stat-completed-lessons').textContent = completedCount;
-            document.getElementById('stat-total-subjects').textContent = uniqueSubjects.size;
+            // Aggregate Calculations Output
+            document.getElementById('agg-total-time').textContent = `${totalMinutes}m`;
+            document.getElementById('agg-unique-subjects').textContent = Object.keys(modulesMapped).length;
             
-            const progressPercentage = ledgerStore.length > 0 ? Math.round((completedCount / ledgerStore.length) * 100) : 0;
-            document.getElementById('stat-progress-pct').textContent = `${progressPercentage}%`;
+            const generalPercentage = matrixStore.length > 0 ? Math.round((finishedItems / matrixStore.length) * 100) : 0;
+            document.getElementById('agg-completion-rate').textContent = `${generalPercentage}%`;
+            document.getElementById('agg-progress-bar').style.width = `${generalPercentage}%`;
 
-            // Sync state records safely back to the system browser
-            localStorage.setItem('advancedStudyLedger', JSON.stringify(ledgerStore));
+            // Tier Calculation Engine Configuration Rules
+            assignRankTier(finishedItems, totalMinutes);
+            renderModuleCharts(modulesMapped);
+            processDiagnostics(totalMinutes, finishedItems);
+
+            // Sync Caching Engine Properties
+            localStorage.setItem('academicOSLedger', JSON.stringify(matrixStore));
+            document.getElementById('streak-counter').textContent = systemStreak;
         }
 
-        // Form processing rules
-        sessionForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        mainForm.addEventListener('submit', function(ev) {
+            ev.preventDefault();
 
-            const record = {
-                subject: document.getElementById('form-subject').value,
-                topic: document.getElementById('form-topic').value,
-                duration: parseInt(document.getElementById('form-duration').value),
-                date: document.getElementById('form-date').value,
-                status: document.getElementById('form-status').value
+            const elementDate = document.getElementById('in-date').value;
+            calculateStreak(elementDate);
+
+            const node = {
+                subject: document.getElementById('in-subject').value,
+                topic: document.getElementById('in-topic').value,
+                duration: parseInt(document.getElementById('in-duration').value),
+                date: elementDate,
+                status: document.getElementById('in-status').value
             };
 
-            ledgerStore.push(record);
-            renderApplication();
-            sessionForm.reset();
-            setDefaultDate();
+            matrixStore.push(node);
+            parseStateMetrics();
+            mainForm.reset();
+            initializeTimestampParameter();
         });
 
-        // Delete an entry from ledger
-        function deleteItem(index) {
-            ledgerStore.splice(index, 1);
-            renderApplication();
-        }
+        function calculateStreak(inputDate) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-        // Reset database
-        function clearAllData() {
-            if(confirm('Are you absolutely sure you want to completely clear out your entire tracker history?')) {
-                ledgerStore = [];
-                renderApplication();
+            if (lastLoggedDate !== inputDate) {
+                if (lastLoggedDate === yesterdayStr && inputDate === todayStr) {
+                    systemStreak++;
+                } else if (lastLoggedDate !== todayStr) {
+                    systemStreak = 1;
+                }
+                lastLoggedDate = inputDate;
+                localStorage.setItem('academicOSStreak', systemStreak);
+                localStorage.setItem('academicOSLastDate', lastLoggedDate);
             }
         }
 
-        // Filter functionality
-        function filterTable() {
-            const searchValue = document.getElementById('table-
+        function assignRankTier(items, mins) {
+            let tier = "Novice Cadet";
+            let subtitle = "Log content to calibrate processing matrices.";
+            
+            if(items >= 12 || mins >= 600) { tier = "Arch-Scholar Elite"; subtitle = "Mastery quotient achieved across multiple nodes."; }
+            else if(items >= 6 || mins >= 300) { tier = "Matrix Adept"; subtitle = "Consistent processing bandwidth confirmed."; }
+            else if(items >= 2 || mins >= 60) { tier = "System Apprentice"; subtitle = "Initial database initialization sequence complete."; }
+
+            document.getElementById('agg-rank-tier').textContent = tier;
+            document.getElementById('agg-rank-sub').textContent = subtitle;
+        }
+
+        function renderModuleCharts(modules) {
+            const chartArea = document.getElementById('module-progress-distribution');
+            chartArea.innerHTML = '';
+            
+            const keys = Object.keys(modules);
+            if(keys.length === 0) {
+                chartArea.innerHTML = `<tr><td class="text-muted text-center py-4 font-mono small">No structural distribution vectors loaded.</td></tr>`;
+                return;
+            }
+
+            keys.forEach(k => {
+                const percentage = Math.round((modules[k].completed / modules[k].total) * 100);
+                const chartRow = document.createElement('tr');
+                chartRow.innerHTML = `
+                    <td class="fw-bold font-mono text-secondary small" style="width: 30%">${escapeInput(k)}</td>
+                    <td style="width: 55%">
+                        <div class="progress-track"><div class="bg-primary h-100" style="width: ${percentage}%"></div></div>
+                    </td>
+                    <td class="text-end font-mono fw-bold text-muted small" style="width: 15%">${percentage}%</td>
+                `;
+                chartArea.appendChild(chartRow);
+            });
+        }
+
+        function processDiagnostics(totalMins, doneCount) {
+            document.getElementById('diag-next-tier').textContent = `${matrixStore.length % 5} / 5 Log Cycles`;
+            document.getElementById('diag-avg-time').textContent = matrixStore.length > 0 ? `${Math.round(totalMins / matrixStore.length)} mins` : `0 mins`;
+            
+            let backlogMins = matrixStore.filter(x => x.status !== 'Completed').reduce((sum, current) => sum + current.duration, 0);
+            document.getElementById('diag-backlog').textContent = `${backlogMins} mins active`;
+        }
+
+        function filterMatrixStore() {
+            const searchStr = document.getElementById('query-search').value.toLowerCase();
+            const filterState = document.getElementById('query-filter-state').value;
+            const rows = matrixTableBody.getElementsByTagName('tr');
+            let foundCount = 0;
+
+            matrixStore.forEach((el, index) => {
+                const targetRow = rows[index];
+                if(!targetRow) return;
+
+                const matchText = el.subject.toLowerCase().includes(searchStr) || el.topic.toLowerCase().includes(searchStr);
+                const matchState = filterState === 'All' || el.status === filterState;
+
+                if(matchText && matchState) {
+                    targetRow.style.display = '';
+                    foundCount++;
+                } else {
+                    targetRow.style.display = 'none';
+                }
+            });
+
+            if(foundCount === 0 && matrixStore.length > 0) {
+                emptyAlert.classList.remove('d-none');
+            } else if (matrixStore.length > 0) {
+                emptyAlert.classList.add('d-none');
+            }
+        }
+
+        function bootstrapTab(tabId) {
+            const triggerEl = document.getElementById(tabId);
+            if(triggerEl) bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+        }
+
+        function purgeElement(pos) {
+            matrixStore.splice(pos, 1);
+            parseStateMetrics();
+        }
+
+        function wipeLocalRegistryMatrix() {
+            if(confirm('🚨 CRITICAL INSTRUCTION DETECTED. Wipe out total database ledger matrix parameters?')) {
+                matrixStore = [];
+                systemStreak = 0;
+                lastLoggedDate = "";
+                localStorage.clear();
+                parseStateMetrics();
+            }
+        }
+
+        function exportJSONLedger() {
+            const payload = JSON.stringify(matrixStore, null, 2);
+            const blob = new Blob([payload], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = `academic_os_matrix_export_${new Date().toISOString().split('T')[0]}.json`;
+            anchor.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function triggerImportSelection() {
+            document.getElementById('hidden-import-field').click();
+        }
+
+        function importJSONLedger(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if(Array.isArray(importedData)) {
+                        matrixStore = importedData;
+                        parseStateMetrics();
+                        alert('Database Ledger configuration array safely injected and parsed.');
+                    } else {
+                        alert('Formatting mismatch. Target object is not structured as an array matrix.');
+                    }
+                } catch(err) {
+                    alert('Syntax initialization parameters broken inside uploaded JSON.');
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        function generateAdvancedDemo() {
+            matrixStore = [
+                { date: "2026-06-12", subject: "Quantum Computing I", topic: "Superposition Paradigms & Qubit Gate States", duration: 120, status: "Completed" },
+                { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Isomorphisms & Combinatoric Logic matrices", duration: 90, status: "Completed" },
+                { date: "2026-06-18", subject: "Advanced Neuromorphic Networks", topic: "Backpropagation Logic vectors inside Multi-layer Perceptrons", duration: 150, status: "In Progress" },
+                { date: "2026-06-21", subject: "Quantum Computing I", topic: "Shor's Algorithm Optimization Parameters", duration: 75, status: "Completed" },
+                { date: "2026-06-24", subject: "Discrete Mathematics", topic: "Set Theory Foundations & Venn Space Computations", duration: 60, status: "In Progress" }
+            ];
+            systemStreak = 5;
+            localStorage.setItem('academicOSStreak', systemStreak);
+            parseStateMetrics();
+        }
+
+        function initializeTimestampParameter() {
+            document.getElementById('in-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function escapeInput(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        initializeTimestampParameter();
+        parseStateMetrics();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
