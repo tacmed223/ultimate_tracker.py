@@ -3,492 +3,428 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Academic OS & Progress Matrix</title>
+    <title>Academic OS - Enterprise Edition</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --ctx-bg: #f8fafc;
-            --ctx-card: #ffffff;
-            --ctx-text: #0f172a;
-            --ctx-primary: #6366f1;
-        }
-        body { font-family: 'Inter', sans-serif; background-color: var(--ctx-bg); color: var(--ctx-text); }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .glass-card { background: var(--ctx-card); border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .glass-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        body { background-color: #f8fafc; color: #0f172a; font-family: system-ui, -apple-system, sans-serif; }
         
-        /* Custom dynamic tab switching styles */
-        .tab-panel { display: none; }
-        .tab-panel.active-panel { display: block; }
+        /* Fixed Sidebar Layout */
+        .sidebar { width: 260px; position: fixed; top: 0; bottom: 0; left: 0; background-color: #1e293b; padding: 20px 10px; z-index: 100; }
+        .main-content { margin-left: 260px; padding: 40px; }
         
-        .nav-pills .nav-link { color: #64748b; border-radius: 10px; font-weight: 500; padding: 10px 20px; border: none; background: none; transition: all 0.2s; }
-        .nav-pills .nav-link.active { background-color: var(--ctx-primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        .badge-pill { border-radius: 30px; padding: 5px 12px; font-weight: 600; }
+        /* Failproof Sidebar Buttons */
+        .nav-menu-item { width: 100%; text-align: left; background: none; border: none; padding: 12px 16px; color: #94a3b8; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; transition: all 0.2s; }
+        .nav-menu-item:hover { background-color: #334155; color: #f8fafc; }
+        .nav-menu-item.active-menu { background-color: #6366f1; color: #ffffff; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
+        
+        /* App View Panels */
+        .app-panel { display: none; }
+        .app-panel.active-panel { display: block; }
+        
+        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; }
         .progress-track { height: 6px; border-radius: 10px; background-color: #e2e8f0; overflow: hidden; }
-        .streak-fire { color: #f97316; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm py-3">
-        <div class="container">
-            <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
-                <i class="fa-solid fa-cubes text-info fs-3"></i> 
-                <span>ACADEMIC<span class="text-info">.OS</span> Matrix</span>
-            </span>
-            <div class="d-flex gap-2 align-items-center">
-                <div class="bg-secondary bg-opacity-25 border border-secondary text-light px-3 py-1.5 rounded-3 font-mono small d-flex align-items-center gap-2">
-                    <i class="fa-solid fa-fire streak-fire"></i> Streak: <span id="streak-counter" class="fw-bold text-warning">0</span> Days
-                </div>
-                <button class="btn btn-sm btn-info fw-bold" onclick="generateAdvancedDemo()"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Synthesize Demo</button>
-            </div>
+    <div class="sidebar">
+        <div class="px-3 mb-4 text-white">
+            <h4 class="fw-bold d-flex align-items-center gap-2 m-0">
+                <i class="fa-solid fa-cubes text-info"></i> ACADEMIC.OS
+            </h4>
+            <span class="text-muted small">v2.0 Matrix Core</span>
         </div>
-    </nav>
-
-    <div class="container my-4">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-            <div class="nav nav-pills gap-2">
-                <button class="nav-link active" onclick="switchTab('panel-dashboard', this)"><i class="fa-solid fa-chart-pie me-2"></i>Analytics Hub</button>
-                <button class="nav-link" onclick="switchTab('panel-ledger', this)"><i class="fa-solid fa-database me-2"></i>Lesson Record Ledger</button>
-                <button class="nav-link" onclick="switchTab('panel-config', this)"><i class="fa-solid fa-sliders me-2"></i>System Controls</button>
-            </div>
-            <div class="font-mono text-muted small"><i class="fa-solid fa-server me-1"></i> Storage Engine: LocalStorage Cache</div>
+        
+        <hr class="text-secondary mx-2">
+        
+        <div class="mt-2">
+            <button class="nav-menu-item active-menu" onclick="forceViewSwitch('view-analytics', this)">
+                <i class="fa-solid fa-chart-pie"></i> Analytics Hub
+            </button>
+            <button class="nav-menu-item" onclick="forceViewSwitch('view-ledger', this)">
+                <i class="fa-solid fa-database"></i> Lesson Ledger
+            </button>
+            <button class="nav-menu-item" onclick="forceViewSwitch('view-controls', this)">
+                <i class="fa-solid fa-sliders"></i> System Controls
+            </button>
         </div>
-
-        <div>
-            <div class="tab-panel active-panel" id="panel-dashboard">
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="glass-card p-4 bg-white">
-                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Gross Runtime</p>
-                            <h2 id="agg-total-time" class="fw-bold font-mono tracking-tight text-primary">0 mins</h2>
-                            <div class="text-muted small"><i class="fa-solid fa-hourglass-half me-1"></i>Total logged study time</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="glass-card p-4 bg-white">
-                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Completeness Index</p>
-                            <h2 id="agg-completion-rate" class="fw-bold font-mono text-success">0%</h2>
-                            <div class="progress-track mt-2"><div id="agg-progress-bar" class="bg-success h-100" style="width: 0%"></div></div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="glass-card p-4 bg-white">
-                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Module Density</p>
-                            <h2 id="agg-unique-subjects" class="fw-bold font-mono text-info">0</h2>
-                            <div class="text-muted small"><i class="fa-solid fa-layer-group me-1"></i>Active structured modules</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="glass-card p-4 bg-white">
-                            <p class="text-uppercase text-muted font-mono small fw-bold mb-1">Standing Tier</p>
-                            <h2 id="agg-rank-tier" class="fw-bold text-warning fs-3">Novice</h2>
-                            <div class="text-muted small font-mono" id="agg-rank-sub">Log data to unlock tiers</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-4 mb-4">
-                    <div class="col-lg-7">
-                        <div class="glass-card p-4 bg-white h-100">
-                            <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-column text-primary me-2"></i>Module Completion Velocity</h5>
-                            <div class="table-responsive">
-                                <table class="table table-sm align-middle border-0 mb-0">
-                                    <tbody id="module-progress-distribution">
-                                        </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-5">
-                        <div class="glass-card p-4 bg-white h-100 text-center d-flex flex-column justify-content-center">
-                            <h5 class="fw-bold text-start mb-3"><i class="fa-solid fa-bullseye text-danger me-2"></i>System Diagnostics</h5>
-                            <div class="p-3 bg-light rounded-3 mb-2 font-mono text-start small">
-                                <div><strong>Next Tier Progress:</strong> <span id="diag-next-tier">0/5 logs</span></div>
-                                <div><strong>Average Runtime:</strong> <span id="diag-avg-time">0 mins/log</span></div>
-                                <div><strong>Estimated Backlog:</strong> <span id="diag-backlog">0 mins</span></div>
-                            </div>
-                            <button class="btn btn-outline-primary btn-sm w-100 mt-auto" onclick="document.querySelectorAll('.nav-pills button')[1].click() Konami Code">Navigate to Logging Registry <i class="fa-solid fa-arrow-right ms-1"></i></button>
-                        </div>
-                    </div>
-                </div>
+        
+        <div class="position-absolute bottom-0 start-0 end-0 p-3">
+            <div class="bg-dark bg-opacity-50 text-warning rounded p-2 text-center small border border-secondary border-opacity-20">
+                🔥 Streak: <span id="streak-counter" class="fw-bold text-white">0</span> Days
             </div>
-
-            <div class="tab-panel" id="panel-ledger">
-                <div class="row g-4">
-                    <div class="col-xl-4">
-                        <div class="glass-card p-4 bg-white">
-                            <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-square-plus text-primary me-2"></i>Append Lesson Entry</h5>
-                            <form id="matrix-logging-form">
-                                <div class="mb-3">
-                                    <label class="form-label font-mono small fw-bold">Course / Module Identifier</label>
-                                    <input type="text" id="in-subject" class="form-control form-control-md" placeholder="e.g., Computer Science IV" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-mono small fw-bold">Target Lesson / Element Title</label>
-                                    <input type="text" id="in-topic" class="form-control form-control-md" placeholder="e.g., Dijkstra's Graph Optimizations" required>
-                                </div>
-                                <div class="row g-2 mb-3">
-                                    <div class="col-6">
-                                        <label class="form-label font-mono small fw-bold">Allocation (Mins)</label>
-                                        <input type="number" id="in-duration" class="form-control form-control-md" min="1" required>
-                                    </div>
-                                    <div class="col-6">
-                                        <label class="form-label font-mono small fw-bold">Timeline Stamp</label>
-                                        <input type="date" id="in-date" class="form-control form-control-md" required>
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label font-mono small fw-bold">Execution Status State</label>
-                                    <select id="in-status" class="form-select form-select-md">
-                                        <option value="In Progress">⏳ Operational / In Progress</option>
-                                        <option value="Completed">✅ Terminated / Completed</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-dark w-100 py-2.5 fw-bold"><i class="fa-solid fa-bolt me-1 text-warning"></i> Execute Logic Commit</button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <div class="col-xl-8">
-                        <div class="glass-card bg-white p-4">
-                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
-                                <h5 class="fw-bold mb-0"><i class="fa-solid fa-database text-muted me-2"></i>Active Ledger Array</h5>
-                                <div class="d-flex gap-2">
-                                    <input type="text" id="query-search" class="form-control form-control-sm" placeholder="Scan elements..." onkeyup="filterMatrixStore()">
-                                    <select id="query-filter-state" class="form-select form-select-sm" onchange="filterMatrixStore()">
-                                        <option value="All">All States</option>
-                                        <option value="In Progress">In Progress</option>
-                                        <option value="Completed">Completed</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table align-middle">
-                                    <thead class="table-light font-mono small text-muted">
-                                        <tr>
-                                            <th>Timestamp</th>
-                                            <th>Module Base</th>
-                                            <th>Element Target</th>
-                                            <th>Cost</th>
-                                            <th>State</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="matrix-table-body" class="small">
-                                        </tbody>
-                                </table>
-                            </div>
-                            <div id="matrix-empty-alert" class="text-center py-5 d-none">
-                                <i class="fa-solid fa-circle-exclamation fa-3x text-muted mb-2"></i>
-                                <p class="text-muted font-mono mb-0">System Array registers empty parameters for selected filters.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-panel" id="panel-config">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="glass-card p-4 bg-white">
-                            <h5 class="fw-bold text-danger mb-3"><i class="fa-solid fa-triangle-exclamation me-2"></i>Data Mutation Engine</h5>
-                            <p class="text-muted small">Wipe out the persistent system registry from local caching storage. Action cannot be undone.</p>
-                            <button class="btn btn-danger btn-sm" onclick="wipeLocalRegistryMatrix()"><i class="fa-solid fa-radiation me-1"></i> Wipe Cache Memory</button>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="glass-card p-4 bg-white">
-                            <h5 class="fw-bold text-success mb-3"><i class="fa-solid fa-file-export me-2"></i>Portability Management</h5>
-                            <p class="text-muted small">Export system database parameters into a secure JSON file, or load external records back in.</p>
-                            <div class="d-flex gap-2">
-                                <button class="btn btn-outline-dark btn-sm" onclick="exportJSONLedger()"><i class="fa-solid fa-download me-1"></i> Export JSON</button>
-                                <button class="btn btn-outline-primary btn-sm" onclick="triggerImportSelection()"><i class="fa-solid fa-upload me-1"></i> Import JSON</button>
-                                <input type="file" id="hidden-import-field" class="d-none" accept=".json" onchange="importJSONLedger(event)">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
+    <div class="main-content">
+        
+        <div id="view-analytics" class="app-panel active-panel">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold m-0 text-dark">Analytics Hub</h2>
+                <button class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="triggerDemoSynthesis()">
+                    <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Synthesize Demo Matrix
+                </button>
+            </div>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="glass-card">
+                        <span class="text-muted text-uppercase small font-monospace d-block mb-1">Gross Runtime</span>
+                        <h1 id="agg-time" class="fw-bold text-primary m-0">0 mins</h1>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card">
+                        <span class="text-muted text-uppercase small font-monospace d-block mb-1">Completion Index</span>
+                        <h1 id="agg-rate" class="fw-bold text-success m-0">0%</h1>
+                        <div class="progress-track mt-2"><div id="agg-progress" class="bg-success h-100" style="width: 0%"></div></div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="glass-card">
+                        <span class="text-muted text-uppercase small font-monospace d-block mb-1">Active Modules</span>
+                        <h1 id="agg-modules" class="fw-bold text-info m-0">0</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card">
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-column text-primary me-2"></i>Subject Completion Velocity</h5>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle border-0 mb-0">
+                        <tbody id="chart-bars-area">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-ledger" class="app-panel">
+            <h2 class="fw-bold mb-4 text-dark">Lesson Record Ledger</h2>
+            
+            <div class="row">
+                <div class="col-xl-4 col-lg-5 mb-4">
+                    <div class="glass-card">
+                        <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-square-plus text-primary me-2"></i>Append Lesson Entry</h5>
+                        <form id="logging-input-form">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Course / Module Identifier</label>
+                                <input type="text" id="in-subject" class="form-control" placeholder="e.g., Computer Science IV" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Target Lesson Title</label>
+                                <input type="text" id="in-topic" class="form-control" placeholder="e.g., Dijkstra's Graph Logic" required>
+                            </div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-secondary">Allocation (Mins)</label>
+                                    <input type="number" id="in-duration" class="form-control" min="1" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold text-secondary">Timeline Date</label>
+                                    <input type="date" id="in-date" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-secondary">Execution State</label>
+                                <select id="in-status" class="form-select">
+                                    <option value="In Progress">⏳ In Progress</option>
+                                    <option value="Completed">✅ Completed</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100 fw-bold py-2"><i class="fa-solid fa-bolt me-1 text-warning"></i> Execute Logic Commit</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-xl-8 col-lg-7">
+                    <div class="glass-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                            <h5 class="fw-bold m-0"><i class="fa-solid fa-database text-muted me-2"></i>Active Ledger Array</h5>
+                            <div class="d-flex gap-2">
+                                <input type="text" id="ledger-search" class="form-control form-control-sm" placeholder="Scan records..." onkeyup="executeLedgerFilters()">
+                                <select id="ledger-filter" class="form-select form-select-sm" onchange="executeLedgerFilters()">
+                                    <option value="All">All States</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Completed">Completed</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead class="table-light small text-muted font-monospace">
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Module</th>
+                                        <th>Element Target</th>
+                                        <th>Cost</th>
+                                        <th>State</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ledger-table-rows" class="small">
+                                    </tbody>
+                            </table>
+                        </div>
+                        <div id="ledger-empty-msg" class="text-center py-4 d-none text-muted font-monospace">
+                            No ledger structures detected matching parameters.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-controls" class="app-panel">
+            <h2 class="fw-bold mb-4 text-dark">System Controls</h2>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="glass-card">
+                        <h5 class="fw-bold text-danger mb-2"><i class="fa-solid fa-triangle-exclamation me-2"></i>Data Mutation Engine</h5>
+                        <p class="text-muted small">Purge all records from local caching memory. This action instantly resets your session.</p>
+                        <button class="btn btn-danger btn-sm fw-bold" onclick="executeSystemWipe()"><i class="fa-solid fa-radiation me-1"></i> Wipe Cache Memory</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="glass-card">
+                        <h5 class="fw-bold text-success mb-2"><i class="fa-solid fa-file-export me-2"></i>Portability Management</h5>
+                        <p class="text-muted small">Download your active progress data array as an external JSON backup file.</p>
+                        <button class="btn btn-outline-dark btn-sm fw-bold" onclick="exportDataToJSON()"><i class="fa-solid fa-download me-1"></i> Export Database JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
     <script>
-        let matrixStore = JSON.parse(localStorage.getItem('academicOSLedger')) || [];
-        let systemStreak = parseInt(localStorage.getItem('academicOSStreak')) || 0;
-        let lastLoggedDate = localStorage.getItem('academicOSLastDate') || "";
+        let dataStore = JSON.parse(localStorage.getItem('academicOS_v2')) || [];
+        let globalStreak = parseInt(localStorage.getItem('academicOS_v2_streak')) || 0;
+        let baseLoggedDate = localStorage.getItem('academicOS_v2_date') || "";
 
-        const mainForm = document.getElementById('matrix-logging-form');
-        const matrixTableBody = document.getElementById('matrix-table-body');
-        const emptyAlert = document.getElementById('matrix-empty-alert');
+        const submissionForm = document.getElementById('logging-input-form');
+        const rowsOutputTarget = document.getElementById('ledger-table-rows');
+        const emptyAlertTarget = document.getElementById('ledger-empty-msg');
+        const chartsOutputTarget = document.getElementById('chart-bars-area');
 
-        // Custom failproof tab switching function 
-        function switchTab(panelId, buttonEl) {
-            // Hide all panels
-            document.querySelectorAll('.tab-panel').forEach(panel => {
+        // UNBREAKABLE CHANGER: Direct visibility toggle completely independent of CSS layout bugs
+        function forceViewSwitch(targetViewId, clickedButton) {
+            // Hide every view panel explicitly
+            document.querySelectorAll('.app-panel').forEach(panel => {
                 panel.classList.remove('active-panel');
             });
-            // Remove active style from all tab buttons
-            document.querySelectorAll('.nav-pills .nav-link').forEach(btn => {
-                btn.classList.remove('active');
+            // Remove active states from all sidebar buttons
+            document.querySelectorAll('.nav-menu-item').forEach(btn => {
+                btn.classList.remove('active-menu');
             });
-            
-            // Show target panel and set active button style
-            document.getElementById(panelId).classList.add('active-panel');
-            buttonEl.classList.add('active');
+
+            // Turn on active targets
+            document.getElementById(targetViewId).classList.add('active-panel');
+            clickedButton.classList.add('active-menu');
         }
 
-        function parseStateMetrics() {
-            matrixTableBody.innerHTML = '';
+        function calculateDashboardStates() {
+            rowsOutputTarget.innerHTML = '';
             
-            if(matrixStore.length === 0) {
-                emptyAlert.classList.remove('d-none');
+            if(dataStore.length === 0) {
+                emptyAlertTarget.classList.remove('d-none');
             } else {
-                emptyAlert.classList.add('d-none');
+                emptyAlertTarget.classList.add('d-none');
             }
 
-            let totalMinutes = 0;
-            let finishedItems = 0;
-            let modulesMapped = {};
+            let calculatedMinutes = 0;
+            let completeCount = 0;
+            let subjectVelocityMap = {};
 
-            matrixStore.sort((a,b) => new Date(b.date) - new Date(a.date));
+            // Sort chronology: newest entry output first
+            dataStore.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-            matrixStore.forEach((element, pos) => {
-                totalMinutes += element.duration;
+            dataStore.forEach((element, index) => {
+                calculatedMinutes += element.duration;
                 
-                let modKey = element.subject.trim();
-                if(!modulesMapped[modKey]) {
-                    modulesMapped[modKey] = { total: 0, completed: 0 };
+                let cleanKey = element.subject.trim();
+                if(!subjectVelocityMap[cleanKey]) {
+                    subjectVelocityMap[cleanKey] = { total: 0, done: 0 };
                 }
-                modulesMapped[modKey].total++;
+                subjectVelocityMap[cleanKey].total++;
 
-                const isDone = element.status === 'Completed';
-                if(isDone) {
-                    finishedItems++;
-                    modulesMapped[modKey].completed++;
+                const stateDone = element.status === 'Completed';
+                if(stateDone) {
+                    completeCount++;
+                    subjectVelocityMap[cleanKey].done++;
                 }
 
-                const itemRow = document.createElement('tr');
-                if(isDone) itemRow.classList.add('table-success', 'bg-opacity-10', 'text-decoration-line-through', 'text-muted');
+                const tableRow = document.createElement('tr');
+                if(stateDone) tableRow.classList.add('table-success', 'bg-opacity-10');
 
-                itemRow.innerHTML = `
-                    <td class="font-mono text-muted text-nowrap">${element.date}</td>
-                    <td><span class="badge bg-dark bg-opacity-10 text-dark border px-2 py-1 font-mono">${escapeInput(element.subject)}</span></td>
-                    <td class="fw-semibold text-dark">${escapeInput(element.topic)}</td>
-                    <td class="font-mono fw-bold">${element.duration}m</td>
+                tableRow.innerHTML = `
+                    <td class="font-monospace text-muted text-nowrap">${element.date}</td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border font-monospace px-2 py-1">${sanitizeString(element.subject)}</span></td>
+                    <td class="fw-semibold text-dark">${sanitizeString(element.topic)}</td>
+                    <td class="font-monospace fw-bold">${element.duration}m</td>
                     <td>
-                        <span class="badge badge-pill ${isDone ? 'bg-success-subtle text-success border border-success' : 'bg-warning-subtle text-warning border border-warning'}">
-                            ${isDone ? '⚡ Done' : '⏳ Active'}
+                        <span class="badge ${stateDone ? 'bg-success-subtle text-success border border-success' : 'bg-warning-subtle text-warning border border-warning'}">
+                            ${stateDone ? '⚡ Completed' : '⏳ In Progress'}
                         </span>
                     </td>
                     <td class="text-end">
-                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeElement(${pos})"><i class="fa-solid fa-xmark"></i></button>
+                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeLedgerItem(${index})"><i class="fa-solid fa-xmark"></i></button>
                     </td>
                 `;
-                matrixTableBody.appendChild(itemRow);
+                rowsOutputTarget.appendChild(tableRow);
             });
 
-            document.getElementById('agg-total-time').textContent = `${totalMinutes}m`;
-            document.getElementById('agg-unique-subjects').textContent = Object.keys(modulesMapped).length;
+            // Set Header Counter Blocks Data outputs
+            document.getElementById('agg-time').textContent = `${calculatedMinutes}m`;
+            document.getElementById('agg-modules').textContent = Object.keys(subjectVelocityMap).length;
             
-            const generalPercentage = matrixStore.length > 0 ? Math.round((finishedItems / matrixStore.length) * 100) : 0;
-            document.getElementById('agg-completion-rate').textContent = `${generalPercentage}%`;
-            document.getElementById('agg-progress-bar').style.width = `${generalPercentage}%`;
+            const ratePercentage = dataStore.length > 0 ? Math.round((completeCount / dataStore.length) * 100) : 0;
+            document.getElementById('agg-rate').textContent = `${ratePercentage}%`;
+            document.getElementById('agg-progress').style.width = `${ratePercentage}%`;
 
-            assignRankTier(finishedItems, totalMinutes);
-            renderModuleCharts(modulesMapped);
-            processDiagnostics(totalMinutes, finishedItems);
+            renderVelocityBars(subjectVelocityMap);
 
-            localStorage.setItem('academicOSLedger', JSON.stringify(matrixStore));
-            document.getElementById('streak-counter').textContent = systemStreak;
+            // Sync structural memory cache definitions
+            localStorage.setItem('academicOS_v2', JSON.stringify(dataStore));
+            document.getElementById('streak-counter').textContent = globalStreak;
         }
 
-        mainForm.addEventListener('submit', function(ev) {
-            ev.preventDefault();
+        submissionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-            const elementDate = document.getElementById('in-date').value;
-            calculateStreak(elementDate);
+            const calendarValue = document.getElementById('in-date').value;
+            processStreakLogic(calendarValue);
 
-            const node = {
+            const objectNode = {
                 subject: document.getElementById('in-subject').value,
                 topic: document.getElementById('in-topic').value,
                 duration: parseInt(document.getElementById('in-duration').value),
-                date: elementDate,
+                date: calendarValue,
                 status: document.getElementById('in-status').value
             };
 
-            matrixStore.push(node);
-            parseStateMetrics();
-            mainForm.reset();
-            initializeTimestampParameter();
+            dataStore.push(objectNode);
+            calculateDashboardStates();
+            submissionForm.reset();
+            applyFallbackDateTracker();
         });
 
-        function calculateStreak(inputDate) {
+        function processStreakLogic(dateInput) {
             const todayStr = new Date().toISOString().split('T')[0];
             const yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
             const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-            if (lastLoggedDate !== inputDate) {
-                if (lastLoggedDate === yesterdayStr && inputDate === todayStr) {
-                    systemStreak++;
-                } else if (lastLoggedDate !== todayStr) {
-                    systemStreak = 1;
+            if (baseLoggedDate !== dateInput) {
+                if (baseLoggedDate === yesterdayStr && dateInput === todayStr) {
+                    globalStreak++;
+                } else if (baseLoggedDate !== todayStr) {
+                    globalStreak = 1;
                 }
-                lastLoggedDate = inputDate;
-                localStorage.setItem('academicOSStreak', systemStreak);
-                localStorage.setItem('academicOSLastDate', lastLoggedDate);
+                baseLoggedDate = dateInput;
+                localStorage.setItem('academicOS_v2_streak', globalStreak);
+                localStorage.setItem('academicOS_v2_date', baseLoggedDate);
             }
         }
 
-        function assignRankTier(items, mins) {
-            let tier = "Novice Cadet";
-            let subtitle = "Log content to calibrate processing matrices.";
+        function renderVelocityBars(modules) {
+            chartsOutputTarget.innerHTML = '';
+            const referenceKeys = Object.keys(modules);
             
-            if(items >= 12 || mins >= 600) { tier = "Arch-Scholar Elite"; subtitle = "Mastery quotient achieved across multiple nodes."; }
-            else if(items >= 6 || mins >= 300) { tier = "Matrix Adept"; subtitle = "Consistent processing bandwidth confirmed."; }
-            else if(items >= 2 || mins >= 60) { tier = "System Apprentice"; subtitle = "Initial database initialization sequence complete."; }
-
-            document.getElementById('agg-rank-tier').textContent = tier;
-            document.getElementById('agg-rank-sub').textContent = subtitle;
-        }
-
-        function renderModuleCharts(modules) {
-            const chartArea = document.getElementById('module-progress-distribution');
-            chartArea.innerHTML = '';
-            
-            const keys = Object.keys(modules);
-            if(keys.length === 0) {
-                chartArea.innerHTML = `<tr><td class="text-muted text-center py-4 font-mono small">No structural distribution vectors loaded.</td></tr>`;
+            if(referenceKeys.length === 0) {
+                chartsOutputTarget.innerHTML = `<tr><td class="text-muted py-3 small font-monospace">No structural data profiles compiled into local storage arrays.</td></tr>`;
                 return;
             }
 
-            keys.forEach(k => {
-                const percentage = Math.round((modules[k].completed / modules[k].total) * 100);
-                const chartRow = document.createElement('tr');
-                chartRow.innerHTML = `
-                    <td class="fw-bold font-mono text-secondary small" style="width: 30%">${escapeInput(k)}</td>
-                    <td style="width: 55%">
-                        <div class="progress-track"><div class="bg-primary h-100" style="width: ${percentage}%"></div></div>
+            referenceKeys.forEach(key => {
+                const stepPercentage = Math.round((modules[key].done / modules[key].total) * 100);
+                const visualRow = document.createElement('tr');
+                visualRow.innerHTML = `
+                    <td class="fw-bold font-monospace text-secondary small" style="width: 25%">${sanitizeString(key)}</td>
+                    <td style="width: 65%">
+                        <div class="progress-track"><div class="bg-primary h-100" style="width: ${stepPercentage}%"></div></div>
                     </td>
-                    <td class="text-end font-mono fw-bold text-muted small" style="width: 15%">${percentage}%</td>
+                    <td class="text-end font-monospace fw-bold text-muted small" style="width: 10%">${stepPercentage}%</td>
                 `;
-                chartArea.appendChild(chartRow);
+                chartsOutputTarget.appendChild(visualRow);
             });
         }
 
-        function processDiagnostics(totalMins, doneCount) {
-            document.getElementById('diag-next-tier').textContent = `${matrixStore.length % 5} / 5 Log Cycles`;
-            document.getElementById('diag-avg-time').textContent = matrixStore.length > 0 ? `${Math.round(totalMins / matrixStore.length)} mins` : `0 mins`;
-            
-            let backlogMins = matrixStore.filter(x => x.status !== 'Completed').reduce((sum, current) => sum + current.duration, 0);
-            document.getElementById('diag-backlog').textContent = `${backlogMins} mins active`;
-        }
+        function executeLedgerFilters() {
+            const lookFor = document.getElementById('ledger-search').value.toLowerCase();
+            const filterState = document.getElementById('ledger-filter').value;
+            const rowsRef = rowsOutputTarget.getElementsByTagName('tr');
+            let matchedItems = 0;
 
-        function filterMatrixStore() {
-            const searchStr = document.getElementById('query-search').value.toLowerCase();
-            const filterState = document.getElementById('query-filter-state').value;
-            const rows = matrixTableBody.getElementsByTagName('tr');
-            let foundCount = 0;
+            dataStore.forEach((dataNode, index) => {
+                const targetedDomRow = rowsRef[index];
+                if(!targetedDomRow) return;
 
-            matrixStore.forEach((el, index) => {
-                const targetRow = rows[index];
-                if(!targetRow) return;
+                const hasText = dataNode.subject.toLowerCase().includes(lookFor) || dataNode.topic.toLowerCase().includes(lookFor);
+                const hasState = filterState === 'All' || dataNode.status === filterState;
 
-                const matchText = el.subject.toLowerCase().includes(searchStr) || el.topic.toLowerCase().includes(searchStr);
-                const matchState = filterState === 'All' || el.status === filterState;
-
-                if(matchText && matchState) {
-                    targetRow.style.display = '';
-                    foundCount++;
+                if(hasText && hasState) {
+                    targetedDomRow.style.display = '';
+                    matchedItems++;
                 } else {
-                    targetRow.style.display = 'none';
+                    targetedDomRow.style.display = 'none';
                 }
             });
 
-            if(foundCount === 0 && matrixStore.length > 0) {
-                emptyAlert.classList.remove('d-none');
-            } else if (matrixStore.length > 0) {
-                emptyAlert.classList.add('d-none');
+            if(matchedItems === 0 && dataStore.length > 0) {
+                emptyAlertTarget.classList.remove('d-none');
+            } else if (dataStore.length > 0) {
+                emptyAlertTarget.classList.add('d-none');
             }
         }
 
-        function purgeElement(pos) {
-            matrixStore.splice(pos, 1);
-            parseStateMetrics();
+        function purgeLedgerItem(pos) {
+            dataStore.splice(pos, 1);
+            calculateDashboardStates();
         }
 
-        function wipeLocalRegistryMatrix() {
-            if(confirm('🚨 CRITICAL INSTRUCTION DETECTED. Wipe out total database ledger matrix parameters?')) {
-                matrixStore = [];
-                systemStreak = 0;
-                lastLoggedDate = "";
+        function executeSystemWipe() {
+            if(confirm('Wipe complete system index memory cache arrays?')) {
+                dataStore = [];
+                globalStreak = 0;
+                baseLoggedDate = "";
                 localStorage.clear();
-                parseStateMetrics();
+                calculateDashboardStates();
             }
         }
 
-        function exportJSONLedger() {
-            const payload = JSON.stringify(matrixStore, null, 2);
-            const blob = new Blob([payload], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const anchor = document.createElement('a');
-            anchor.href = url;
-            anchor.download = `academic_os_matrix_export_${new Date().toISOString().split('T')[0]}.json`;
-            anchor.click();
-            URL.revokeObjectURL(url);
+        function exportDataToJSON() {
+            const dynamicBlob = new Blob([JSON.stringify(dataStore, null, 2)], { type: 'application/json' });
+            const temporaryAnchor = document.createElement('a');
+            temporaryAnchor.href = URL.createObjectURL(dynamicBlob);
+            temporaryAnchor.download = `academic_os_system_export.json`;
+            temporaryAnchor.click();
         }
 
-        function triggerImportSelection() {
-            document.getElementById('hidden-import-field').click();
-        }
-
-        function importJSONLedger(event) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if(Array.isArray(importedData)) {
-                        matrixStore = importedData;
-                        parseStateMetrics();
-                        alert('Database Ledger configuration array safely injected and parsed.');
-                    } else {
-                        alert('Formatting mismatch. Target object is not structured as an array matrix.');
-                    }
-                } catch(err) {
-                    alert('Syntax initialization parameters broken inside uploaded JSON.');
-                }
-            };
-            reader.readAsText(event.target.files[0]);
-        }
-
-        function generateAdvancedDemo() {
-            matrixStore = [
-                { date: "2026-06-12", subject: "Quantum Computing I", topic: "Superposition Paradigms & Qubit Gate States", duration: 120, status: "Completed" },
-                { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Isomorphisms & Combinatoric Logic matrices", duration: 90, status: "Completed" },
-                { date: "2026-06-18", subject: "Advanced Neuromorphic Networks", topic: "Backpropagation Logic vectors inside Multi-layer Perceptrons", duration: 150, status: "In Progress" },
-                { date: "2026-06-21", subject: "Quantum Computing I", topic: "Shor's Algorithm Optimization Parameters", duration: 75, status: "Completed" },
-                { date: "2026-06-24", subject: "Discrete Mathematics", topic: "Set Theory Foundations & Venn Space Computations", duration: 60, status: "In Progress" }
+        function triggerDemoSynthesis() {
+            dataStore = [
+                { date: "2026-06-12", subject: "Quantum Engineering", topic: "Entanglement Distribution Vectors", duration: 120, status: "Completed" },
+                { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Colorings & Tree Arrays", duration: 90, status: "Completed" },
+                { date: "2026-06-18", subject: "Neural Architecture", topic: "Deep Belief Weight Matrices", duration: 150, status: "In Progress" },
+                { date: "2026-06-21", subject: "Quantum Engineering", topic: "Superconducting Circuit Alignment", duration: 80, status: "Completed" }
             ];
-            systemStreak = 5;
-            localStorage.setItem('academicOSStreak', systemStreak);
-            parseStateMetrics();
+            globalStreak = 4;
+            localStorage.setItem('academicOS_v2_streak', globalStreak);
+            calculateDashboardStates();
         }
 
-        function initializeTimestampParameter() {
+        function applyFallbackDateTracker() {
             document.getElementById('in-date').value = new Date().toISOString().split('T')[0];
         }
 
-        function escapeInput(text) {
-            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        function sanitizeString(rawStr) {
+            return rawStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        initializeTimestampParameter();
-        parseStateMetrics();
+        applyFallbackDateTracker();
+        calculateDashboardStates();
     </script>
 </body>
 </html>
