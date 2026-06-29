@@ -1,261 +1,279 @@
-import datetime
-import json
-import pandas as pd
-import streamlit as st
-
-# --- CONFIGURATION & PAGE SETUP ---
-st.set_page_config(
-    page_title="Academic OS - Multi-Profile Platform",
-    page_icon="⬢",
-    layout="wide",
-)
-
-# Custom styling to resemble the original modern UI
-st.markdown(
-    """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic OS - Multi-Profile Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-    .font-mono { font-family: 'JetBrains Mono', monospace; }
-    .stButton>button { border-radius: 8px; }
+        body { background-color: #f1f5f9; color: #0f172a; font-family: 'Inter', sans-serif; padding-bottom: 60px; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .master-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 24px; position: relative; }
+        .progress-track { height: 8px; border-radius: 10px; background-color: #e2e8f0; overflow: hidden; }
+        .section-title { font-size: 1.1rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Smooth transitions for locked panels */
+        .admin-locked-zone { display: none; }
+        .admin-mode-active .admin-locked-zone { display: block !important; }
     </style>
-    """,
-    unsafe_allow_html=True,
-)
+</head>
+<body>
 
-# --- SESSION STATE INITIALIZATION ---
-# Replicates your JS localStorage array
-if "data_store" not in st.session_state:
-    st.session_state.data_store = []
+    <nav class="navbar navbar-dark bg-dark shadow-sm py-3 mb-4">
+        <div class="container-fluid px-4">
+            <span class="navbar-brand fw-bold d-flex align-items-center gap-2 m-0">
+                <i class="fa-solid fa-cubes text-info fs-4"></i> 
+                <span>ACADEMIC<span class="text-info">.OS</span> Platform</span>
+            </span>
+            <div class="d-flex gap-3 align-items-center">
+                <button id="admin-status-badge" class="btn btn-sm btn-outline-secondary text-muted fw-bold font-mono" onclick="toggleAdminLoginGate()">
+                    <i class="fa-solid fa-lock me-1"></i> Student Mode
+                </button>
+                <div class="bg-secondary bg-opacity-25 border border-secondary text-warning px-3 py-1.5 rounded-3 font-mono small">
+                    🔥 Streak: <span id="streak-counter" class="fw-bold text-white">0</span> Days
+                </div>
+            </div>
+        </div>
+    </nav>
 
-if "streak" not in st.session_state:
-    st.session_state.streak = 0
+    <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header bg-dark text-white border-0 py-3" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-shield-halved text-info me-2"></i>Admin Authorization</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="admin-gate-form">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Operator Username</label>
+                            <input type="text" id="gate-user" class="form-control" placeholder="Enter username" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-secondary">Security Password</label>
+                            <input type="password" id="gate-pass" class="form-control" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">Decrypt & Unlock Panels</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
-if "last_logged_date" not in st.session_state:
-    st.session_state.last_logged_date = None
+    <div class="container-fluid px-4">
+        
+        <div class="row g-3 mb-2">
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">Gross Runtime</span>
+                    <h2 id="agg-time" class="fw-bold font-mono text-primary m-0">0 mins</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">Completeness Index</span>
+                    <h2 id="agg-rate" class="fw-bold font-mono text-success m-0">0%</h2>
+                    <div class="progress-track mt-2"><div id="agg-progress" class="bg-success h-100" style="width: 0%"></div></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">Module Density</span>
+                    <h2 id="agg-modules" class="fw-bold font-mono text-info m-0">0</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="master-card">
+                    <span class="text-muted text-uppercase small font-mono d-block mb-1">System Diagnostics</span>
+                    <div class="font-mono small text-muted mt-1">
+                        <div>Avg: <span id="diag-avg" class="text-dark fw-bold">0m</span></div>
+                        <div>Backlog: <span id="diag-backlog" class="text-danger fw-bold">0m</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-if "is_admin" not in st.session_state:
-    st.session_state.is_admin = False
+        <div class="row">
+            
+            <div class="col-xl-4 col-lg-5">
+                
+                <div class="master-card">
+                    <div class="section-title"><i class="fa-solid fa-square-plus text-primary"></i> Append Lesson Entry</div>
+                    <form id="logging-input-form">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Course / Module Identifier</label>
+                            <input type="text" id="in-subject" class="form-control" placeholder="e.g., Computer Science IV" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Target Lesson / Element Title</label>
+                            <input type="text" id="in-topic" class="form-control" placeholder="e.g., Dijkstra's Algorithm" required>
+                        </div>
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary">Allocation (Mins)</label>
+                                <input type="number" id="in-duration" class="form-control" min="1" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-secondary">Timeline Stamp</label>
+                                <input type="date" id="in-date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">Execution State</label>
+                            <select id="in-status" class="form-select">
+                                <option value="In Progress">⏳ Operational / In Progress</option>
+                                <option value="Completed">✅ Terminated / Completed</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100 fw-bold py-2"><i class="fa-solid fa-bolt me-1 text-warning"></i> Execute Logic Commit</button>
+                    </form>
+                </div>
 
+                <div class="master-card bg-light bg-opacity-70 admin-locked-zone">
+                    <div class="section-title text-danger"><i class="fa-solid fa-gears me-2"></i> Administrative Root Control</div>
+                    <p class="text-muted small">Perform localized operations on active registry variables and configurations.</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-dark btn-sm text-start fw-bold" onclick="exportDataToJSON()">
+                            <i class="fa-solid fa-download me-2 text-primary"></i> Export Full Backup Array (JSON)
+                        </button>
+                        <button class="btn btn-outline-info btn-sm text-start fw-bold" onclick="triggerDemoSynthesis()">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2 text-info"></i> Inject Sandbox Demo Framework
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm text-start fw-bold" onclick="executeSystemWipe()">
+                            <i class="fa-solid fa-trash-can me-2"></i> Deep Clean Storage Registers
+                        </button>
+                    </div>
+                </div>
 
-# --- STREAK LOGIC ---
-def process_streak_logic(date_input):
-    today = datetime.date.today()
-    yesterday = today - datetime.timedelta(days=1)
+            </div>
 
-    if st.session_state.last_logged_date != date_input:
-        if (
-            st.session_state.last_logged_date == yesterday
-            and date_input == today
-        ):
-            st.session_state.streak += 1
-        elif st.session_state.last_logged_date != today:
-            st.session_state.streak = 1
-        st.session_state.last_logged_date = date_input
+            <div class="col-xl-8 col-lg-7">
+                
+                <div class="master-card">
+                    <div class="section-title"><i class="fa-solid fa-chart-column text-primary"></i> Module Completion Velocity</div>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle border-0 mb-0">
+                            <tbody id="chart-bars-area">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
 
+                <div class="master-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div class="section-title m-0"><i class="fa-solid fa-database text-secondary"></i> Active Ledger Array</div>
+                        <div class="d-flex gap-2">
+                            <input type="text" id="ledger-search" class="form-control form-control-sm" placeholder="Scan records..." onkeyup="executeLedgerFilters()">
+                            <select id="ledger-filter" class="form-select form-select-sm" onchange="executeLedgerFilters()">
+                                <option value="All">All Statuses</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light small text-muted font-mono">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Module Group</th>
+                                    <th>Element Target</th>
+                                    <th>Cost</th>
+                                    <th>State</th>
+                                    <th class="admin-locked-zone">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ledger-table-rows" class="small">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div id="ledger-empty-msg" class="text-center py-5 d-none text-muted font-mono small">
+                        <i class="fa-solid fa-circle-nodes d-block mb-2 fa-2x text-black-50"></i>
+                        No structural nodes found matching the active workspace matrix parameters.
+                    </div>
+                </div>
 
-# --- NAVBAR / TOP BANNER ---
-st.title("⬢ ACADEMIC.OS Platform")
+            </div>
+        </div>
 
-# Top Metrics Row (Streak & Role Authorization)
-top_col1, top_col2 = st.columns([3, 1])
+    </div>
 
-with top_col1:
-    st.markdown(
-        f"🔥 **Streak Counter:** `{st.session_state.streak}` Days",
-        unsafe_allow_html=True,
-    )
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let dataStore = JSON.parse(localStorage.getItem('academicOS_v4')) || [];
+        let globalStreak = parseInt(localStorage.getItem('academicOS_v4_streak')) || 0;
+        let baseLoggedDate = localStorage.getItem('academicOS_v4_date') || "";
+        let isAdminAuthenticated = false;
 
-with top_col2:
-    # Admin Panel Gatekeeper
-    if not st.session_state.is_admin:
-        with st.popover("🔒 Student Mode (Click to Auth)"):
-            st.markdown("### Admin Authorization")
-            user_input = st.text_input("Operator Username")
-            pass_input = st.text_input("Security Password", type="password")
-            if st.button("Decrypt & Unlock Panels"):
-                if user_input == "username" and pass_input == "password":
-                    st.session_state.is_admin = True
-                    st.rerun()
-                else:
-                    st.error("Authentication Failure: Invalid Parameters.")
-    else:
-        if st.button("🔓 Root Active (Click to Lock)"):
-            st.session_state.is_admin = False
-            st.rerun()
+        const submissionForm = document.getElementById('logging-input-form');
+        const rowsOutputTarget = document.getElementById('ledger-table-rows');
+        const emptyAlertTarget = document.getElementById('ledger-empty-msg');
+        const chartsOutputTarget = document.getElementById('chart-bars-area');
+        
+        const loginModalInstance = new bootstrap.Modal(document.getElementById('adminLoginModal'));
+        const loginForm = document.getElementById('admin-gate-form');
 
-st.markdown("---")
-
-# --- DATA PROCESSING & DIAGNOSTICS ---
-df = pd.DataFrame(st.session_state.data_store)
-
-if not df.empty:
-    df["duration"] = pd.to_numeric(df["duration"])
-    gross_runtime = df["duration"].sum()
-    completed_df = df[df["status"] == "Completed"]
-    backlog_df = df[df["status"] == "In Progress"]
-
-    completeness_index = int((len(completed_df) / len(df)) * 100)
-    module_density = df["subject"].nunique()
-    avg_diagnostic = int(df["duration"].mean())
-    backlog_minutes = backlog_df["duration"].sum()
-else:
-    gross_runtime = 0
-    completeness_index = 0
-    module_density = 0
-    avg_diagnostic = 0
-    backlog_minutes = 0
-
-# --- MAIN DASHBOARD CARDS ---
-card1, card2, card3, card4 = st.columns(4)
-with card1:
-    st.metric(label="Gross Runtime", value=f"{gross_runtime} mins")
-with card2:
-    st.metric(label="Completeness Index", value=f"{completeness_index}%")
-    st.progress(completeness_index / 100)
-with card3:
-    st.metric(label="Module Density", value=module_density)
-with card4:
-    st.metric(label="Avg Diagnostic", value=f"{avg_diagnostic}m")
-    st.caption(f"⚠️ Backlog Array: {backlog_minutes}m")
-
-
-# --- WORKSPACE BODY LAYOUT ---
-col_left, col_right = st.columns([1, 2])
-
-# LEFT COLUMN: Inputs & System Control
-with col_left:
-    st.subheader("➕ Append Lesson Entry")
-    with st.form("lesson_form", clear_on_submit=True):
-        in_subject = st.text_input(
-            "Course / Module Identifier", placeholder="e.g., Computer Science IV"
-        )
-        in_topic = st.text_input(
-            "Target Lesson / Element Title", placeholder="e.g., Dijkstra's Algorithm"
-        )
-        in_duration = st.number_input(
-            "Allocation (Mins)", min_value=1, value=45
-        )
-        in_date = st.date_input("Timeline Stamp", value=datetime.date.today())
-        in_status = st.selectbox(
-            "Execution State", ["In Progress", "Completed"]
-        )
-
-        submit_btn = st.form_submit_button("Execute Logic Commit")
-
-        if submit_btn and in_subject and in_topic:
-            process_streak_logic(in_date)
-            new_node = {
-                "date": str(in_date),
-                "subject": in_subject,
-                "topic": in_topic,
-                "duration": int(in_duration),
-                "status": in_status,
+        // GATEKEEPER SWITCH LOGIC
+        function toggleAdminLoginGate() {
+            if (isAdminAuthenticated) {
+                // If already logged in, clicking the badge will lock the platform back down
+                isAdminAuthenticated = false;
+                document.body.classList.remove('admin-mode-active');
+                const badge = document.getElementById('admin-status-badge');
+                badge.className = "btn btn-sm btn-outline-secondary text-muted fw-bold font-mono";
+                badge.innerHTML = `<i class="fa-solid fa-lock me-1"></i> Student Mode`;
+                calculateDashboardStates();
+            } else {
+                loginModalInstance.show();
             }
-            st.session_state.data_store.append(new_node)
-            st.success("Entry committed successfully!")
-            st.rerun()
+        }
 
-    # Administrative Section (Conditional Visibility)
-    if st.session_state.is_admin:
-        st.markdown("### ⚙️ Administrative Root Control")
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('gate-user').value;
+            const passwordInput = document.getElementById('gate-pass').value;
 
-        # System Wipe
-        if st.button("🗑️ Deep Clean Storage Registers", type="primary"):
-            st.session_state.data_store = []
-            st.session_state.streak = 0
-            st.session_state.last_logged_date = None
-            st.success("Local database cleared.")
-            st.rerun()
+            if (usernameInput === "username" && passwordInput === "password") {
+                isAdminAuthenticated = true;
+                loginModalInstance.hide();
+                loginForm.reset();
+                
+                // Add class to body to visually reveal admin components via CSS mapping
+                document.body.classList.add('admin-mode-active');
+                
+                const badge = document.getElementById('admin-status-badge');
+                badge.className = "btn btn-sm btn-success fw-bold font-mono text-white animate__animated animate__flash";
+                badge.innerHTML = `<i class="fa-solid fa-unlock-keyhole me-1"></i> Root Active`;
+                
+                calculateDashboardStates();
+            } else {
+                alert("❌ Authentication Failure: Invalid Operator Profile Parameters.");
+            }
+        });
 
-        # Inject Demo Framework
-        if st.button("🪄 Inject Sandbox Demo Framework"):
-            st.session_state.data_store = [
-                {
-                    "date": "2026-06-12",
-                    "subject": "Quantum Computing",
-                    "topic": "Entanglement Topologies",
-                    "duration": 120,
-                    "status": "Completed",
-                },
-                {
-                    "date": "2026-06-15",
-                    "subject": "Discrete Mathematics",
-                    "topic": "Graph Isomorphisms",
-                    "duration": 90,
-                    "status": "Completed",
-                },
-                {
-                    "date": "2026-06-18",
-                    "subject": "Neural Architecture",
-                    "topic": "Backpropagation Scaling",
-                    "duration": 150,
-                    "status": "In Progress",
-                },
-                {
-                    "date": "2026-06-21",
-                    "subject": "Quantum Computing",
-                    "topic": "Shor's Processing Parameters",
-                    "duration": 80,
-                    "status": "Completed",
-                },
-            ]
-            st.session_state.streak = 4
-            st.rerun()
+        function calculateDashboardStates() {
+            rowsOutputTarget.innerHTML = '';
+            
+            if(dataStore.length === 0) {
+                emptyAlertTarget.classList.remove('d-none');
+            } else {
+                emptyAlertTarget.classList.add('d-none');
+            }
 
-        # JSON Export Backup
-        if not df.empty:
-            json_string = json.dumps(st.session_state.data_store, indent=2)
-            st.download_button(
-                label="📥 Export Full Backup Array (JSON)",
-                file_name="academic_os_system_export.json",
-                mime="application/json",
-                data=json_string,
-            )
+            let calculatedMinutes = 0;
+            let completeCount = 0;
+            let backlogMinutes = 0;
+            let subjectVelocityMap = {};
 
-# RIGHT COLUMN: Progress Charts & Active Ledger Table
-with col_right:
-    st.subheader("📊 Module Completion Velocity")
-    if not df.empty:
-        # Calculate completion rate per subject
-        velocity_data = []
-        for subject, group in df.groupby("subject"):
-            total_items = len(group)
-            done_items = len(group[group["status"] == "Completed"])
-            rate = int((done_items / total_items) * 100)
-            velocity_data.append({"Subject": subject, "Completion %": rate})
+            dataStore.sort((a,b) => new Date(b.date) - new Date(a.date));
 
-        v_df = pd.DataFrame(velocity_data)
-        st.bar_chart(data=v_df, x="Subject", y="Completion %")
-    else:
-        st.info("No structural metrics compiled into metrics register.")
-
-    st.subheader("🗄️ Active Ledger Array")
-
-    # Filters
-    f_col1, f_col2 = st.columns(2)
-    with f_col1:
-        search_query = st.text_input("Scan records...", placeholder="Filter...")
-    with f_col2:
-        filter_state = st.selectbox("Filter Status", ["All", "In Progress", "Completed"])
-
-    # Apply Filter Transformations to DataFrame Display
-    if not df.empty:
-        display_df = df.copy()
-        if search_query:
-            display_df = display_df[
-                display_df["subject"].str.contains(search_query, case=False)
-                | display_df["topic"].str.contains(search_query, case=False)
-            ]
-        if filter_state != "All":
-            display_df = display_df[display_df["status"] == filter_state]
-
-        if not display_df.empty:
-            # Formatting for display
-            st.dataframe(
-                display_df[["date", "subject", "topic", "duration", "status"]],
-                use_container_width=True,
-                hide_index=True,
-            )
-        else:
-            st.warning("No structural nodes found matching parameters.")
-    else:
-        st.warning("No structural nodes found matching parameters.")
+            dataStore.forEach((element, index) => {
+                calculatedMinutes += element.duration;
+                
+                let cleanKey = element.subject.trim();
+                if(!subjectVelocityMap[cleanKey]) {
+                    subjectVelocityMap[cleanKey] = { total: 0, done: 0 };
+                }
