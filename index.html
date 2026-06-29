@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -277,3 +277,190 @@
                 if(!subjectVelocityMap[cleanKey]) {
                     subjectVelocityMap[cleanKey] = { total: 0, done: 0 };
                 }
+                subjectVelocityMap[cleanKey].total++;
+
+                const stateDone = element.status === 'Completed';
+                if(stateDone) {
+                    completeCount++;
+                    subjectVelocityMap[cleanKey].done++;
+                } else {
+                    backlogMinutes += element.duration;
+                }
+
+                const tableRow = document.createElement('tr');
+                if(stateDone) tableRow.classList.add('table-success', 'bg-opacity-10', 'text-decoration-line-through', 'text-muted');
+
+                tableRow.innerHTML = `
+                    <td class="font-mono text-muted text-nowrap">${element.date}</td>
+                    <td><span class="badge bg-secondary bg-opacity-10 text-dark border font-mono px-2 py-1">${sanitizeString(element.subject)}</span></td>
+                    <td class="fw-semibold text-dark">${sanitizeString(element.topic)}</td>
+                    <td class="font-mono fw-bold">${element.duration}m</td>
+                    <td>
+                        <span class="badge ${stateDone ? 'bg-success' : 'bg-warning text-dark'}">
+                            ${stateDone ? '⚡ Done' : '⏳ Active'}
+                        </span>
+                    </td>
+                    <td class="text-end admin-locked-zone">
+                        <button class="btn btn-link btn-sm text-danger p-0 border-0" onclick="purgeLedgerItem(${index})"><i class="fa-solid fa-trash-can"></i></button>
+                    </td>
+                `;
+                rowsOutputTarget.appendChild(tableRow);
+            });
+
+            document.getElementById('agg-time').textContent = `${calculatedMinutes}m`;
+            document.getElementById('agg-modules').textContent = Object.keys(subjectVelocityMap).length;
+            
+            const ratePercentage = dataStore.length > 0 ? Math.round((completeCount / dataStore.length) * 100) : 0;
+            document.getElementById('agg-rate').textContent = `${ratePercentage}%`;
+            document.getElementById('agg-progress').style.width = `${ratePercentage}%`;
+
+            document.getElementById('diag-avg').textContent = dataStore.length > 0 ? `${Math.round(calculatedMinutes / dataStore.length)}m` : `0m`;
+            document.getElementById('diag-backlog').textContent = `${backlogMinutes}m`;
+
+            renderVelocityBars(subjectVelocityMap);
+
+            localStorage.setItem('academicOS_v4', JSON.stringify(dataStore));
+            document.getElementById('streak-counter').textContent = globalStreak;
+        }
+
+        submissionForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const calendarValue = document.getElementById('in-date').value;
+            processStreakLogic(calendarValue);
+
+            const objectNode = {
+                subject: document.getElementById('in-subject').value,
+                topic: document.getElementById('in-topic').value,
+                duration: parseInt(document.getElementById('in-duration').value),
+                date: calendarValue,
+                status: document.getElementById('in-status').value
+            };
+
+            dataStore.push(objectNode);
+            calculateDashboardStates();
+            submissionForm.reset();
+            applyFallbackDateTracker();
+        });
+
+        function processStreakLogic(dateInput) {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            if (baseLoggedDate !== dateInput) {
+                if (baseLoggedDate === yesterdayStr && dateInput === todayStr) {
+                    globalStreak++;
+                } else if (baseLoggedDate !== todayStr) {
+                    globalStreak = 1;
+                }
+                baseLoggedDate = dateInput;
+                localStorage.setItem('academicOS_v4_streak', globalStreak);
+                localStorage.setItem('academicOS_v4_date', baseLoggedDate);
+            }
+        }
+
+        function renderVelocityBars(modules) {
+            chartsOutputTarget.innerHTML = '';
+            const referenceKeys = Object.keys(modules);
+            
+            if(referenceKeys.length === 0) {
+                chartsOutputTarget.innerHTML = `<tr><td class="text-muted py-3 small font-mono">No structural metrics compiled into storage registry arrays.</td></tr>`;
+                return;
+            }
+
+            referenceKeys.forEach(key => {
+                const stepPercentage = Math.round((modules[key].done / modules[key].total) * 100);
+                const visualRow = document.createElement('tr');
+                visualRow.innerHTML = `
+                    <td class="fw-bold font-mono text-secondary small" style="width: 25%">${sanitizeString(key)}</td>
+                    <td style="width: 65%">
+                        <div class="progress-track"><div class="bg-primary h-100" style="width: ${stepPercentage}%"></div></div>
+                    </td>
+                    <td class="text-end font-mono fw-bold text-muted small" style="width: 10%">${stepPercentage}%</td>
+                `;
+                chartsOutputTarget.appendChild(visualRow);
+            });
+        }
+
+        function executeLedgerFilters() {
+            const lookFor = document.getElementById('ledger-search').value.toLowerCase();
+            const filterState = document.getElementById('ledger-filter').value;
+            const rowsRef = rowsOutputTarget.getElementsByTagName('tr');
+            let matchedItems = 0;
+
+            dataStore.forEach((dataNode, index) => {
+                const targetedDomRow = rowsRef[index];
+                if(!targetedDomRow) return;
+
+                const hasText = dataNode.subject.toLowerCase().includes(lookFor) || dataNode.topic.toLowerCase().includes(lookFor);
+                const hasState = filterState === 'All' || dataNode.status === filterState;
+
+                if(hasText && hasState) {
+                    targetedDomRow.style.display = '';
+                    matchedItems++;
+                } else {
+                    targetedDomRow.style.display = 'none';
+                }
+            });
+
+            if(matchedItems === 0 && dataStore.length > 0) {
+                emptyAlertTarget.classList.remove('d-none');
+            } else if (dataStore.length > 0) {
+                emptyAlertTarget.classList.add('d-none');
+            }
+        }
+
+        function purgeLedgerItem(pos) {
+            if(!isAdminAuthenticated) return;
+            dataStore.splice(pos, 1);
+            calculateDashboardStates();
+        }
+
+        function executeSystemWipe() {
+            if(!isAdminAuthenticated) return;
+            if(confirm('Wipe complete local system database registry arrays?')) {
+                dataStore = [];
+                globalStreak = 0;
+                baseLoggedDate = "";
+                localStorage.clear();
+                calculateDashboardStates();
+            }
+        }
+
+        function exportDataToJSON() {
+            if(!isAdminAuthenticated) return;
+            const dynamicBlob = new Blob([JSON.stringify(dataStore, null, 2)], { type: 'application/json' });
+            const temporaryAnchor = document.createElement('a');
+            temporaryAnchor.href = URL.createObjectURL(dynamicBlob);
+            temporaryAnchor.download = `academic_os_system_export.json`;
+            temporaryAnchor.click();
+        }
+
+        function triggerDemoSynthesis() {
+            if(!isAdminAuthenticated) return;
+            dataStore = [
+                { date: "2026-06-12", subject: "Quantum Computing", topic: "Entanglement Topologies", duration: 120, status: "Completed" },
+                { date: "2026-06-15", subject: "Discrete Mathematics", topic: "Graph Isomorphisms & Tree Nodes", duration: 90, status: "Completed" },
+                { date: "2026-06-18", subject: "Neural Architecture", topic: "Backpropagation Weight Scaling", duration: 150, status: "In Progress" },
+                { date: "2026-06-21", subject: "Quantum Computing", topic: "Shor's Processing Parameters", duration: 80, status: "Completed" }
+            ];
+            globalStreak = 4;
+            localStorage.setItem('academicOS_v4_streak', globalStreak);
+            calculateDashboardStates();
+        }
+
+        function applyFallbackDateTracker() {
+            document.getElementById('in-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function sanitizeString(rawStr) {
+            return rawStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        applyFallbackDateTracker();
+        calculateDashboardStates();
+    </script>
+</body>
+</html>
